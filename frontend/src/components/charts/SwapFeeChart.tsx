@@ -148,6 +148,19 @@ export default function SwapFeeChart() {
         return unsub
     }, [])
 
+    // ── Refit chart when tab becomes visible (prevents zoom issues)
+    useEffect(() => {
+        const handleVisibility = () => {
+            if (!document.hidden && chartRef.current) {
+                requestAnimationFrame(() => {
+                    chartRef.current?.timeScale().fitContent()
+                })
+            }
+        }
+        document.addEventListener('visibilitychange', handleVisibility)
+        return () => document.removeEventListener('visibilitychange', handleVisibility)
+    }, [])
+
     return (
         <div className="relative w-full h-full rounded-2xl overflow-hidden">
             {/* Header overlay */}
