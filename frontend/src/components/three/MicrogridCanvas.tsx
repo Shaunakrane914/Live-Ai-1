@@ -4,7 +4,7 @@ import { OrbitControls, Stars, Html } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
 import { useGridStore } from '../../store/useGridStore'
-import ProsumerNode, { type ProsumerNodeData, type NodeBehavior, BEHAVIOR_COLORS } from './ProsumerNode'
+import ProsumerNode, { type ProsumerNodeData, type NodeBehavior } from './ProsumerNode'
 import AMMCore from './AMMCore'
 import ParticleFlow from './ParticleFlow'
 
@@ -204,18 +204,6 @@ export default function MicrogridCanvas() {
                     <p className={`text-lg font-semibold leading-tight ${generation > gridLoad ? 'text-emerald-400' : 'text-amber-400'}`}>{(generation - gridLoad).toFixed(1)}</p>
                     <p className="text-[10px] text-slate-600 mt-0.5">{generation > gridLoad ? 'kW Surplus' : 'kW Deficit'}</p>
                 </div>
-            </div>
-
-            {/* Legend - below stats */}
-            <div className="absolute bottom-12 left-4 z-10 flex flex-col gap-1.5 pointer-events-none">
-                {(Object.entries(BEHAVIOR_COLORS) as [NodeBehavior, string][]).filter(([k]) => k !== 'neutral').map(([key, color]) => (
-                    <div key={key} className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-                        <span className="text-[9px] font-semibold uppercase tracking-wider capitalize" style={{ color }}>
-                            {key}
-                        </span>
-                    </div>
-                ))}
             </div>
 
             <div className="absolute bottom-2 right-3 z-10 text-[9px] text-[#8B93A4] opacity-50 pointer-events-none">
