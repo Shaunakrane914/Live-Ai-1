@@ -64,7 +64,7 @@ export default function AmmPage() {
     const { energyReserve, stableReserve, price, swapFee } = useGridStore()
     const { reserves, fetchReserves, executeZkSwap } = useAegisAMM()
     const [activeTab, setActiveTab] = useState<'swap' | 'pool'>('swap')
-    
+
     // Swap state
     const [payAmount, setPayAmount] = useState('10')
     const [executing, setExecuting] = useState(false)
@@ -116,42 +116,42 @@ export default function AmmPage() {
         <motion.div {...fadeUp} className="h-full flex flex-col gap-4">
             {/* Header with Tabs */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-2">
                     <div>
                         <h1 className="text-xl font-bold text-[#1A1D23] tracking-tight">AMM Trading Floor</h1>
                         <p className="text-[11px] text-[#8B93A4] mt-0.5 uppercase tracking-widest">
                             x · y = k  ·  RL Fee Control  ·  ZK-Verified Settlement
                         </p>
                     </div>
-                    <PageInfo 
-                        title="ERC-1155 AMM Floor"
-                        description={[
-                            "This is the financial settlement layer where physical energy is traded via smart contracts.",
-                            "The live charts track the AI's real-time adjustments to the Swap Fee to manage grid volatility.",
-                            "Liquidity providers can stake energy using zk-SNARKs to keep their hardware data private."
-                        ]}
-                    />
+                    <div className="mt-0.5">
+                        <PageInfo
+                            title="AMM Trading Floor"
+                            description={[
+                                "This constant-product AMM (x·y=k) enables peer-to-peer energy trading between prosumer nodes.",
+                                "Swap fees are dynamically adjusted by the DDPG reinforcement learning agent based on real-time grid conditions to maintain optimal liquidity.",
+                                "All trades are settled on-chain with Groth16 zk-SNARK proofs, ensuring privacy and trustless verification."
+                            ]}
+                        />
+                    </div>
                 </div>
-                
+
                 {/* Tab Toggle */}
                 <div className="flex items-center gap-1 p-1 rounded-xl bg-[rgba(0,0,0,0.04)]">
                     <button
                         onClick={() => setActiveTab('swap')}
-                        className={`px-4 py-2 rounded-lg text-[12px] font-semibold transition-all ${
-                            activeTab === 'swap'
-                                ? 'bg-white text-[#1A1D23] shadow-sm'
-                                : 'text-[#8B93A4] hover:text-[#1A1D23]'
-                        }`}
+                        className={`px-4 py-2 rounded-lg text-[12px] font-semibold transition-all ${activeTab === 'swap'
+                            ? 'bg-white text-[#1A1D23] shadow-sm'
+                            : 'text-[#8B93A4] hover:text-[#1A1D23]'
+                            }`}
                     >
                         Swap
                     </button>
                     <button
                         onClick={() => setActiveTab('pool')}
-                        className={`px-4 py-2 rounded-lg text-[12px] font-semibold transition-all ${
-                            activeTab === 'pool'
-                                ? 'bg-white text-[#1A1D23] shadow-sm'
-                                : 'text-[#8B93A4] hover:text-[#1A1D23]'
-                        }`}
+                        className={`px-4 py-2 rounded-lg text-[12px] font-semibold transition-all ${activeTab === 'pool'
+                            ? 'bg-white text-[#1A1D23] shadow-sm'
+                            : 'text-[#8B93A4] hover:text-[#1A1D23]'
+                            }`}
                     >
                         Pool
                     </button>
@@ -164,8 +164,8 @@ export default function AmmPage() {
                     <>
                         {/* ── SWAP TAB ── */}
                         <div className="flex flex-col gap-4">
-                            {/* Candlestick Chart - Tall */}
-                            <div className="flex-1 rounded-3xl overflow-hidden" style={{ minHeight: '320px', background: '#0F1923', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
+                            {/* Candlestick Chart */}
+                            <div className="rounded-3xl overflow-hidden" style={{ height: '360px', background: '#0F1923', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
                                 <SwapFeeChart />
                             </div>
 
@@ -299,7 +299,6 @@ export default function AmmPage() {
                     <>
                         {/* ── POOL TAB ── */}
                         <div className="flex flex-col">
-                            {/* Bonding Curve - Full Height */}
                             <GlassCard delay={0} className="rounded-3xl p-6 flex-1 flex flex-col">
                                 <div className="flex items-center justify-between mb-4">
                                     <div>
@@ -356,7 +355,6 @@ export default function AmmPage() {
 
                         {/* Pool Column */}
                         <div className="flex flex-col gap-4">
-                            {/* Pool Reserves */}
                             <GlassCard delay={0.1} className="rounded-3xl p-5 shrink-0">
                                 <div className="flex justify-between items-center mb-3">
                                     <p className="text-[13px] font-bold text-[#1A1D23]">Pool Reserves</p>
@@ -391,32 +389,27 @@ export default function AmmPage() {
                                 ))}
                             </GlassCard>
 
-                            {/* ZK Add Liquidity */}
                             <GlassCard delay={0.14} strong className="rounded-3xl p-6 flex-1 flex flex-col">
                                 <p className="text-[15px] font-bold text-[#1A1D23] mb-2">ZK Add Liquidity</p>
                                 <p className="text-[10px] text-[#8B93A4] mb-4">Prove surplus energy without revealing solar/load.</p>
                                 <div className="space-y-3 mb-4">
-                                    <div>
-                                        <label className="text-[10px] text-[#8B93A4] block mb-1">Total Solar (kW)</label>
-                                        <input type="number" value={zkSolar} onChange={e => setZkSolar(e.target.value)}
-                                            className="w-full px-3 py-2.5 rounded-xl text-[13px] border" style={{ background: 'rgba(0,0,0,0.03)', borderColor: 'rgba(0,0,0,0.08)' }} />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] text-[#8B93A4] block mb-1">Total Load (kW)</label>
-                                        <input type="number" value={zkLoad} onChange={e => setZkLoad(e.target.value)}
-                                            className="w-full px-3 py-2.5 rounded-xl text-[13px] border" style={{ background: 'rgba(0,0,0,0.03)', borderColor: 'rgba(0,0,0,0.08)' }} />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] text-[#8B93A4] block mb-1">Stable to Add (USDC)</label>
-                                        <input type="number" value={zkStable} onChange={e => setZkStable(e.target.value)}
-                                            className="w-full px-3 py-2.5 rounded-xl text-[13px] border" style={{ background: 'rgba(0,0,0,0.03)', borderColor: 'rgba(0,0,0,0.08)' }} />
-                                    </div>
+                                    {[
+                                        { label: 'Total Solar (kW)', val: zkSolar, set: setZkSolar },
+                                        { label: 'Total Load (kW)', val: zkLoad, set: setZkLoad },
+                                        { label: 'Stable to Add (USDC)', val: zkStable, set: setZkStable },
+                                    ].map(({ label, val, set }) => (
+                                        <div key={label}>
+                                            <label className="text-[10px] text-[#8B93A4] block mb-1">{label}</label>
+                                            <input type="number" value={val} onChange={e => set(e.target.value)}
+                                                className="w-full px-3 py-2.5 rounded-xl text-[13px] border"
+                                                style={{ background: 'rgba(0,0,0,0.03)', borderColor: 'rgba(0,0,0,0.08)' }} />
+                                        </div>
+                                    ))}
                                 </div>
                                 <div className="flex-1" />
                                 <motion.button
                                     onClick={handleZkAddLiquidity}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.97 }}
+                                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                                     disabled={zkExecuting}
                                     className="w-full py-4 rounded-xl font-bold text-[14px] border-0 cursor-pointer"
                                     style={{
@@ -426,9 +419,7 @@ export default function AmmPage() {
                                 >
                                     {zkExecuting ? 'Generating proof…' : 'Execute ZK Add Liquidity'}
                                 </motion.button>
-                                {zkError && (
-                                    <p className="text-[10px] text-[#C62828] mt-2">{zkError}</p>
-                                )}
+                                {zkError && <p className="text-[10px] text-[#C62828] mt-2">{zkError}</p>}
                             </GlassCard>
                         </div>
                     </>
