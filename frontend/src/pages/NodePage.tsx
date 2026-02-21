@@ -14,15 +14,18 @@ const fadeUp = {
 export default function NodePage() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const nodeId = parseInt(id ?? '1')
+    // 3D canvas uses 0-based indexing; default to 0
+    const nodeId = Math.max(0, Math.min(14, parseInt(id ?? '0')))
     const [aegisActive, setAegisActive] = useState(false)
 
-    const { generation, gridLoad, swapFee, energyReserve, stableReserve } = useGridStore()
+    const { generation, gridLoad, swapFee, energyReserve, stableReserve, nodes: storeNodes } = useGridStore()
 
-    // Per-node derived values
-    const nodeGen = generation * (0.06 + Math.sin(nodeId * 1.7) * 0.04)
-    const nodeLoad = gridLoad * (0.06 + Math.cos(nodeId * 2.1) * 0.03)
-    const batSoc = 30 + (Math.sin(nodeId * 1.1) * 0.5 + 0.5) * 65
+    // ── Use real per-node data from WebSocket when available ──────────
+    const liveNode = storeNodes?.[nodeId]
+    const nodeGen = liveNode ? liveNode.current_gen : generation * (0.06 + Math.sin(nodeId * 1.7) * 0.04)
+    const nodeLoad = liveNode ? liveNode.current_load : gridLoad * (0.06 + Math.cos(nodeId * 2.1) * 0.03)
+    const batSoc = liveNode ? liveNode.battery_soc : 30 + (Math.sin(nodeId * 1.1) * 0.5 + 0.5) * 65
+
     const usdcBal = (energyReserve / 100 * (0.5 + nodeId * 0.1)).toFixed(2)
     const lpTokens = (stableReserve / 10 * (0.5 + nodeId * 0.08)).toFixed(2)
     const collat = (parseFloat(usdcBal) * 1.5).toFixed(2)
@@ -30,19 +33,28 @@ export default function NodePage() {
 
     return (
         <motion.div {...fadeUp} className="h-full flex flex-col gap-4">
-            {/* Header + node switcher */}
+            {/* Header + nav */}
             <div className="flex items-center justify-between">
                 <div>
+                    {/* Breadcrumb back button */}
+                    <button
+                        onClick={() => navigate('/overview')}
+                        className="text-[10px] text-[#4DA3FF] mb-1 hover:underline flex items-center gap-1"
+                    >
+                        ← Grid Overview
+                    </button>
                     <h1 className="text-xl font-bold text-[#1A1D23] tracking-tight">Prosumer Node #{nodeId}</h1>
                     <p className="text-[11px] text-[#8B93A4] uppercase tracking-wider">
                         On-chain prosumer · ZK-verified trades · DDPG agent
+                        {liveNode && <span className="ml-2 text-[#00A152]">● LIVE</span>}
                     </p>
                 </div>
-                <div className="flex gap-1.5">
-                    {[1, 2, 3, 4, 5].map(n => (
+                {/* Compact node switcher — all 15 nodes */}
+                <div className="flex flex-wrap gap-1 max-w-[200px] justify-end">
+                    {Array.from({ length: 15 }, (_, n) => (
                         <motion.button key={n} whileTap={{ scale: 0.92 }}
                             onClick={() => navigate(`/node/${n}`)}
-                            className="w-8 h-8 rounded-xl text-[11px] font-bold transition-colors"
+                            className="w-7 h-7 rounded-lg text-[10px] font-bold transition-colors"
                             style={{
                                 background: n === nodeId ? '#4DA3FF' : 'rgba(77,163,255,0.10)',
                                 color: n === nodeId ? '#fff' : '#4DA3FF',

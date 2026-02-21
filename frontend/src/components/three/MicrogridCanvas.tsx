@@ -1,6 +1,7 @@
-import { memo, Suspense, useMemo } from 'react'
+import { memo, Suspense, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Stars } from '@react-three/drei'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
 import { useGridStore } from '../../store/useGridStore'
 import ProsumerNode, { type ProsumerNodeData, type NodeBehavior, BEHAVIOR_COLORS } from './ProsumerNode'
@@ -47,7 +48,7 @@ function GridFloor() {
 // (ProsumerNode already has its own minimal useFrame)
 
 // ── Scene — React.memo prevents re-render from unrelated store ticks
-const Scene = memo(function Scene() {
+const Scene = memo(function Scene({ orbitRef }: { orbitRef: React.RefObject<OrbitControlsImpl | null> }) {
     const { generation, gridLoad, swapFee, energyReserve, stableReserve, events, nodes: storeNodes } = useGridStore()
 
     const nodes: ProsumerNodeData[] = useMemo(() => {
@@ -125,6 +126,7 @@ const Scene = memo(function Scene() {
             ))}
 
             <OrbitControls
+                ref={orbitRef}
                 enablePan={false}
                 enableZoom
                 minDistance={4}
@@ -141,6 +143,19 @@ const Scene = memo(function Scene() {
 
 // ── Canvas wrapper ─────────────────────────────────────────────────
 export default function MicrogridCanvas() {
+    const orbitRef = useRef<OrbitControlsImpl>(null)
+    const [hovering, setHovering] = useState(false)
+
+    // Pause auto-rotate while hovering so the orbit doesn't fight the click
+    const handlePointerOver = () => {
+        setHovering(true)
+        if (orbitRef.current) orbitRef.current.autoRotate = false
+    }
+    const handlePointerOut = () => {
+        setHovering(false)
+        if (orbitRef.current) orbitRef.current.autoRotate = true
+    }
+
     return (
         <div className="w-full h-full relative">
             {/* Legend */}
@@ -156,7 +171,7 @@ export default function MicrogridCanvas() {
             </div>
 
             <div className="absolute bottom-2 right-3 z-10 text-[9px] text-[#8B93A4] opacity-50 pointer-events-none">
-                Drag · Scroll to zoom
+                {hovering ? '🖱 Click to inspect node' : 'Drag · Scroll to zoom · Click node to inspect'}
             </div>
 
             <Canvas
@@ -173,9 +188,11 @@ export default function MicrogridCanvas() {
                 flat
                 performance={{ min: 0.5, max: 1 }}
                 frameloop="always"
+                onPointerOver={handlePointerOver}
+                onPointerOut={handlePointerOut}
             >
                 <Suspense fallback={null}>
-                    <Scene />
+                    <Scene orbitRef={orbitRef} />
                 </Suspense>
             </Canvas>
         </div>
