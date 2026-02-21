@@ -128,12 +128,12 @@ export default function AboutPage() {
         ))}
       </div>
 
-      <div className="relative z-10 max-w-3xl mx-auto py-12 px-6">
+      <div className="relative z-10 max-w-3xl mx-auto py-12 px-6 text-center">
         {/* Back Button */}
         <motion.button
           variants={fadeUp}
           onClick={() => navigate('/overview')}
-          className="flex items-center gap-2 text-[11px] text-slate-500 hover:text-indigo-400 transition-colors mb-12 group"
+          className="inline-flex items-center gap-2 text-[11px] text-slate-500 hover:text-indigo-400 transition-colors mb-12 group"
         >
           <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
