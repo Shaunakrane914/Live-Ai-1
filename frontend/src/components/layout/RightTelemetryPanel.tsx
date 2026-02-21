@@ -21,7 +21,7 @@ export default function RightTelemetryPanel() {
     const imbalanceValue = `${gridImbalance >= 0 ? '+' : ''}${gridImbalance.toFixed(2)}`
 
     return (
-        <aside className="hidden lg:flex flex-col w-72 border-l border-slate-800/50 bg-slate-950/60 backdrop-blur px-4 py-5">
+        <aside className="hidden lg:flex flex-col w-72 bg-slate-950/60 backdrop-blur px-4 py-5">
             {/* Protocol Metrics */}
             <div className="space-y-4">
                 <MetricRow label="Grid Load" value={`${gridLoad.toFixed(1)}`} unit="kW" tone="load" />
@@ -32,9 +32,9 @@ export default function RightTelemetryPanel() {
             </div>
 
             {/* AI Stats - Compact inline */}
-            <div className="mt-5 pt-4 border-t border-slate-800/30">
-                <p className="text-[10px] font-medium text-slate-600 uppercase tracking-wider mb-3">AI Controller</p>
-                <div className="flex items-center justify-between mb-2">
+            <div className="mt-4">
+                <p className="text-[10px] font-medium text-slate-600 uppercase tracking-wider mb-2">AI Controller</p>
+                <div className="flex items-center justify-between mb-1.5">
                     <span className="text-[11px] text-slate-500">Imbalance</span>
                     <span className={`text-[13px] font-semibold ${imbalanceColor}`}>
                         {imbalanceValue} <span className="text-[10px] text-slate-500">kW</span>
@@ -49,9 +49,9 @@ export default function RightTelemetryPanel() {
             </div>
 
             {/* Reserves - Subtle section */}
-            <div className="mt-5 pt-4 border-t border-slate-800/30">
-                <p className="text-[10px] font-medium text-slate-600 uppercase tracking-wider mb-3">Reserves</p>
-                <div className="space-y-3">
+            <div className="mt-4">
+                <p className="text-[10px] font-medium text-slate-600 uppercase tracking-wider mb-2">Reserves</p>
+                <div className="space-y-2">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] text-slate-500">Energy</span>
                         <span className="text-[13px] font-semibold text-slate-200">
