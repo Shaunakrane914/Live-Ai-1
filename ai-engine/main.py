@@ -94,7 +94,7 @@ def _try_load_pretrained_actor():
         )
         agent.actor_target.load_state_dict(agent.actor.state_dict())
         agent.actor.eval()
-        print("✅ Pre-trained DDPG Actor loaded from aegis_actor_weights.pth")
+        print("[OK] Pre-trained DDPG Actor loaded from aegis_actor_weights.pth")
         return True
     except Exception as e:
         print(f"[WARN] Could not load actor weights: {e} — using untrained actor.")
@@ -202,7 +202,7 @@ async def _simulation_loop():
 @app.on_event("startup")
 async def startup():
     asyncio.create_task(_simulation_loop())
-    print("✅ AegisGrid AI Engine started — simulation loop running at 500ms ticks")
+    print("[OK] AegisGrid AI Engine started - simulation loop running at 500ms ticks")
     print(f"   DDPG mode: {'pretrained inference' if _ddpg_pretrained else 'online learning'}")
 
 
@@ -226,6 +226,27 @@ def get_state():
     if not _last_state:
         raise HTTPException(status_code=503, detail="Simulation not started yet")
     return _last_state
+
+
+@app.get("/tick")
+def get_tick():
+    """
+    Alias for /state for Node.js gateway compatibility.
+    Returns same SimState plus slashEvents (gateway expects this key).
+    """
+    if not _last_state:
+        raise HTTPException(status_code=503, detail="Simulation not started yet")
+    out = dict(_last_state)
+    out["slashEvents"] = _last_state.get("events", [])
+    return out
+
+
+@app.post("/chaos", status_code=200)
+def chaos_body(req: ChaosRequest):
+    """
+    Accept POST /chaos with body { "type": "cloud_cover" | ... } for gateway compatibility.
+    """
+    return inject_chaos(req.type)
 
 
 @app.post("/step", response_model=SimState)
