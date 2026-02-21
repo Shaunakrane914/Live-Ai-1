@@ -1,5 +1,5 @@
-import { memo, Suspense, useMemo, useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { memo, Suspense, useMemo, useRef, useState, useEffect } from 'react'
+import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, Stars, Html } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
@@ -106,7 +106,7 @@ const Scene = memo(function Scene({ orbitRef }: { orbitRef: React.RefObject<Orbi
             <ambientLight intensity={1.2} color="#ffffff" />
             <directionalLight position={[4, 7, 4]} intensity={0.4} color="#E0ECFF" castShadow={false} />
 
-            <Stars radius={30} depth={16} count={250} factor={0.7} saturation={0} fade speed={0} />
+            <Stars radius={30} depth={16} count={100} factor={0.7} saturation={0} fade speed={0} />
 
             <GridFloor />
 
@@ -166,6 +166,7 @@ const Scene = memo(function Scene({ orbitRef }: { orbitRef: React.RefObject<Orbi
 export default function MicrogridCanvas() {
     const orbitRef = useRef<OrbitControlsImpl>(null)
     const [hovering, setHovering] = useState(false)
+    const [visible, setVisible] = useState(true)
 
     // Pause auto-rotate while hovering so the orbit doesn't fight the click
     const handlePointerOver = () => {
@@ -176,6 +177,13 @@ export default function MicrogridCanvas() {
         setHovering(false)
         if (orbitRef.current) orbitRef.current.autoRotate = true
     }
+
+    // Pause rendering when tab is hidden
+    useEffect(() => {
+        const handleVisibility = () => setVisible(!document.hidden)
+        document.addEventListener('visibilitychange', handleVisibility)
+        return () => document.removeEventListener('visibilitychange', handleVisibility)
+    }, [])
 
     return (
         <div className="w-full h-full relative">
@@ -208,7 +216,7 @@ export default function MicrogridCanvas() {
                 dpr={[1, 1]}
                 flat
                 performance={{ min: 0.5, max: 1 }}
-                frameloop="always"
+                frameloop={visible ? "demand" : "never"}
                 onPointerOver={handlePointerOver}
                 onPointerOut={handlePointerOut}
             >

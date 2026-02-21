@@ -92,7 +92,7 @@ export const useGridStore = create<GridState>((set) => ({
 
     pushOhlcCandle: (candle) =>
         set((s) => ({
-            ohlcCandles: [...s.ohlcCandles, candle].slice(-500),
+            ohlcCandles: [candle, ...s.ohlcCandles].slice(0, 200),
         })),
 
     setConnected: (v) => set({ connected: v }),
