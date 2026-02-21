@@ -28,75 +28,106 @@ export default function SwapFeeChart() {
     const containerRef = useRef<HTMLDivElement>(null)
     const chartRef = useRef<IChartApi | null>(null)
     const seriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
+    const chartCleanupRef = useRef<(() => void) | null>(null)
 
     // ── Mount: create chart + seed with all accumulated history ───
     useEffect(() => {
-        if (!containerRef.current) return
+        const container = containerRef.current
+        if (!container) return
 
-        const chart = createChart(containerRef.current, {
-            layout: {
-                background: { type: ColorType.Solid, color: THEME.bg },
-                textColor: THEME.textColor,
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: 10,
-            },
-            grid: {
-                vertLines: { color: THEME.gridLines },
-                horzLines: { color: THEME.gridLines },
-            },
-            crosshair: {
-                vertLine: { color: 'rgba(255,255,255,0.15)', labelBackgroundColor: '#1E2D3D' },
-                horzLine: { color: 'rgba(255,255,255,0.15)', labelBackgroundColor: '#1E2D3D' },
-            },
-            rightPriceScale: {
-                borderColor: THEME.gridLines,
-                scaleMargins: { top: 0.1, bottom: 0.1 },
-            },
-            timeScale: {
-                borderColor: THEME.gridLines,
-                timeVisible: true,
-                secondsVisible: true,
-                fixLeftEdge: false,
-            },
-            width: containerRef.current.clientWidth,
-            height: containerRef.current.clientHeight,
-        })
+        // Defer so layout is complete and container has non-zero size
+        const id = requestAnimationFrame(() => {
+            const w = Math.max(container.clientWidth || 400, 100)
+            const h = Math.max(container.clientHeight || 260, 100)
 
-        const series = chart.addSeries(CandlestickSeries, {
-            upColor: THEME.bull,
-            downColor: THEME.bear,
-            borderUpColor: THEME.bull,
-            borderDownColor: THEME.bear,
-            wickUpColor: THEME.bull,
-            wickDownColor: THEME.bear,
-        })
+            const chart = createChart(container, {
+                layout: {
+                    background: { type: ColorType.Solid, color: THEME.bg },
+                    textColor: THEME.textColor,
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: 10,
+                },
+                grid: {
+                    vertLines: { color: THEME.gridLines },
+                    horzLines: { color: THEME.gridLines },
+                },
+                crosshair: {
+                    vertLine: { color: 'rgba(255,255,255,0.15)', labelBackgroundColor: '#1E2D3D' },
+                    horzLine: { color: 'rgba(255,255,255,0.15)', labelBackgroundColor: '#1E2D3D' },
+                },
+                rightPriceScale: {
+                    borderColor: THEME.gridLines,
+                    scaleMargins: { top: 0.25, bottom: 0.25 },
+                    minimumWidth: 60,
+                },
+                timeScale: {
+                    borderColor: THEME.gridLines,
+                    timeVisible: true,
+                    secondsVisible: true,
+                    fixLeftEdge: false,
+                },
+                width: w,
+                height: h,
+            })
 
-        chartRef.current = chart
-        seriesRef.current = series
+            // Pad price range so chart never zooms in too tight (fixes remount zoom)
+            const paddedAutoscale = (base: () => { priceRange?: { minValue: number; maxValue: number } } | null) => {
+                const info = base()
+                if (!info?.priceRange) return info
+                const { minValue, maxValue } = info.priceRange
+                const span = Math.max(maxValue - minValue, 0.5)
+                const pad = span * 0.3
+                return {
+                    ...info,
+                    priceRange: {
+                        minValue: minValue - pad,
+                        maxValue: maxValue + pad,
+                    },
+                }
+            }
 
-        // ── Seed with ALL candles accumulated since app start ──────
-        const history = useGridStore.getState().ohlcCandles
-        if (history.length > 0) {
-            series.setData([...history])
-            chart.timeScale().fitContent()
-        }
+            const series = chart.addSeries(CandlestickSeries, {
+                upColor: THEME.bull,
+                downColor: THEME.bear,
+                borderUpColor: THEME.bull,
+                borderDownColor: THEME.bear,
+                wickUpColor: THEME.bull,
+                wickDownColor: THEME.bear,
+                autoscaleInfoProvider: paddedAutoscale,
+            })
 
-        // Responsive resize
-        const ro = new ResizeObserver(() => {
-            if (containerRef.current) {
-                chart.resize(
-                    containerRef.current.clientWidth,
-                    containerRef.current.clientHeight,
-                )
+            chartRef.current = chart
+            seriesRef.current = series
+
+            // ── Seed with ALL candles accumulated since app start ──────
+            const history = useGridStore.getState().ohlcCandles
+            if (history.length > 0) {
+                series.setData([...history])
+                // Defer so chart applies data first; prevents zoomed-in view on remount
+                requestAnimationFrame(() => {
+                    chart.timeScale().fitContent()
+                })
+            }
+
+            // Responsive resize
+            const ro = new ResizeObserver(() => {
+                if (container && container.clientWidth && container.clientHeight) {
+                    chart.resize(container.clientWidth, container.clientHeight)
+                }
+            })
+            ro.observe(container)
+            chartCleanupRef.current = () => {
+                ro.disconnect()
+                chart.remove()
+                chartRef.current = null
+                seriesRef.current = null
             }
         })
-        ro.observe(containerRef.current)
 
         return () => {
-            ro.disconnect()
-            chart.remove()
-            chartRef.current = null
-            seriesRef.current = null
+            cancelAnimationFrame(id)
+            chartCleanupRef.current?.()
+            chartCleanupRef.current = null
         }
     }, [])
 
@@ -143,8 +174,8 @@ export default function SwapFeeChart() {
                 </div>
             </div>
 
-            {/* Canvas mount point */}
-            <div ref={containerRef} className="w-full h-full" />
+            {/* Canvas mount point — min-height so chart gets non-zero size before rAF */}
+            <div ref={containerRef} className="w-full h-full min-h-[200px]" />
         </div>
     )
 }
