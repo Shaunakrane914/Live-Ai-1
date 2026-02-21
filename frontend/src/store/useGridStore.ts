@@ -10,6 +10,14 @@ export interface GridEvent {
     timestamp: number
 }
 
+/** Real node data from Python physics (Phase 5) */
+export interface GridNode {
+    id: string
+    current_gen: number
+    current_load: number
+    battery_soc: number
+}
+
 export interface GridState {
     // Live simulation metrics
     gridLoad: number   // kW
@@ -20,6 +28,9 @@ export interface GridState {
     stableReserve: number   // AMM stable reserve
     reward: number   // RL reward scalar
     gridImbalance: number   // generation - gridLoad
+
+    // Phase 5: real per-node data from Python (15 nodes)
+    nodes: GridNode[]
 
     // Connection status
     connected: boolean
@@ -44,6 +55,7 @@ export const useGridStore = create<GridState>((set) => ({
     stableReserve: 421,
     reward: 0.847,
     gridImbalance: 15.6,
+    nodes: [],
     connected: false,
     lastTickAt: 0,
     events: [],

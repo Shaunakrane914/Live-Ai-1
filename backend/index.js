@@ -10,6 +10,8 @@
 
 const express = require('express')
 const http = require('http')
+const path = require('path')
+const fs = require('fs')
 const { Server } = require('socket.io')
 const cors = require('cors')
 const axios = require('axios')
@@ -175,6 +177,34 @@ app.get('/node/:id', async (req, res) => {
         res.json(node || { error: 'Node not found' })
     } catch {
         res.status(503).json({ error: 'AI engine offline' })
+    }
+})
+
+// ── Phase 5: zk-SNARK proof generation (for addLiquidityWithProof) ───
+app.post('/api/generate-proof', async (req, res) => {
+    const { totalSolar, totalLoad } = req.body || {}
+    if (!totalSolar || !totalLoad) {
+        return res.status(400).json({ error: 'totalSolar and totalLoad required' })
+    }
+    const circuitsDir = path.join(__dirname, '..', 'blockchain', 'circuits')
+    const wasmPath = path.join(circuitsDir, 'energy_proof_js', 'energy_proof.wasm')
+    const zkeyPath = path.join(circuitsDir, 'energy_proof_0001.zkey')
+    if (!fs.existsSync(wasmPath) || !fs.existsSync(zkeyPath)) {
+        return res.status(503).json({
+            error: 'Circuit artifacts not found. Run: cd blockchain/circuits && ./build.sh',
+        })
+    }
+    try {
+        const { groth16 } = await import('snarkjs')
+        const input = {
+            total_solar: String(totalSolar),
+            total_load: String(totalLoad),
+        }
+        const { proof, publicSignals } = await groth16.fullProve(input, wasmPath, zkeyPath)
+        res.json({ proof, publicSignals })
+    } catch (e) {
+        console.error('[ZK] Proof generation failed:', e)
+        res.status(500).json({ error: e?.message || 'Proof generation failed' })
     }
 })
 

@@ -5,6 +5,7 @@ import {
     ResponsiveContainer, ReferenceLine, CartesianGrid,
 } from 'recharts'
 import { useGridStore } from '../store/useGridStore'
+import { useAegisAMM } from '../hooks/useAegisAMM'
 import GlassCard from '../components/ui/GlassCard'
 
 const fadeUp = {
@@ -59,10 +60,17 @@ const ZK_STATUS = {
 
 export default function AmmPage() {
     const { energyReserve, stableReserve, price, swapFee } = useGridStore()
+    const { reserves, fetchReserves, executeZkSwap } = useAegisAMM()
     const [payAmount, setPayAmount] = useState('10')
     const [executing, setExecuting] = useState(false)
     const [lastTx, setLastTx] = useState<string | null>(null)
-    const [zkRows] = useState<ZKRow[]>(fakeRows)
+    const [zkRows] = useState<ZKRow[]>(() => fakeRows())
+
+    const [zkSolar, setZkSolar] = useState('10')
+    const [zkLoad, setZkLoad] = useState('5')
+    const [zkStable, setZkStable] = useState('20')
+    const [zkExecuting, setZkExecuting] = useState(false)
+    const [zkError, setZkError] = useState<string | null>(null)
 
     const curveData = useMemo(() => buildCurveData(energyReserve, stableReserve), [energyReserve, stableReserve])
 
@@ -80,6 +88,22 @@ export default function AmmPage() {
             setExecuting(false)
             setLastTx('0x' + Math.random().toString(16).slice(2, 12).toUpperCase())
         }, 1700)
+    }
+
+    const handleZkAddLiquidity = async () => {
+        const solar = parseFloat(zkSolar) || 0
+        const load = parseFloat(zkLoad) || 0
+        const stable = parseFloat(zkStable) || 0
+        if (solar <= 0 || load < 0 || stable <= 0) return
+        setZkExecuting(true)
+        setZkError(null)
+        const result = await executeZkSwap(solar, load, stable)
+        setZkExecuting(false)
+        if (result.success && result.txHash) {
+            setLastTx(result.txHash)
+        } else if (result.error) {
+            setZkError(result.error)
+        }
     }
 
     return (
@@ -289,7 +313,18 @@ export default function AmmPage() {
 
                     {/* Pool Stats — delay 0.14 */}
                     <GlassCard delay={0.14} className="rounded-3xl p-5">
-                        <p className="text-[12px] font-bold text-[#1A1D23] mb-3">Pool Reserves</p>
+                        <div className="flex justify-between items-center mb-3">
+                            <p className="text-[12px] font-bold text-[#1A1D23]">Pool Reserves</p>
+                            <button
+                                type="button"
+                                onClick={() => fetchReserves()}
+                                disabled={reserves.isLoading}
+                                className="text-[9px] font-semibold px-2 py-1 rounded-lg hover:bg-[rgba(77,163,255,0.06)]"
+                                style={{ color: '#1565C0' }}
+                            >
+                                {reserves.isLoading ? '…' : 'Refresh'}
+                            </button>
+                        </div>
                         {[
                             { label: 'Energy x', val: energyReserve.toFixed(0), unit: 'kWh', color: '#1565C0', pct: Math.min(100, energyReserve / 90) },
                             { label: 'Stable y', val: stableReserve.toFixed(1), unit: 'USDC', color: '#2E7D32', pct: Math.min(100, stableReserve / 20) },
@@ -309,6 +344,45 @@ export default function AmmPage() {
                                 </div>
                             </div>
                         ))}
+                    </GlassCard>
+
+                    {/* ZK Add Liquidity — Phase 5 */}
+                    <GlassCard delay={0.18} className="rounded-3xl p-5">
+                        <p className="text-[12px] font-bold text-[#1A1D23] mb-3">ZK Add Liquidity</p>
+                        <p className="text-[9px] text-[#8B93A4] mb-3">Prove surplus energy without revealing solar/load.</p>
+                        <div className="space-y-2 mb-3">
+                            <div>
+                                <label className="text-[9px] text-[#8B93A4] block mb-1">Total Solar (kW)</label>
+                                <input type="number" value={zkSolar} onChange={e => setZkSolar(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-xl text-[12px] border" style={{ background: 'rgba(0,0,0,0.03)', borderColor: 'rgba(0,0,0,0.08)' }} />
+                            </div>
+                            <div>
+                                <label className="text-[9px] text-[#8B93A4] block mb-1">Total Load (kW)</label>
+                                <input type="number" value={zkLoad} onChange={e => setZkLoad(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-xl text-[12px] border" style={{ background: 'rgba(0,0,0,0.03)', borderColor: 'rgba(0,0,0,0.08)' }} />
+                            </div>
+                            <div>
+                                <label className="text-[9px] text-[#8B93A4] block mb-1">Stable to Add (USDC)</label>
+                                <input type="number" value={zkStable} onChange={e => setZkStable(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-xl text-[12px] border" style={{ background: 'rgba(0,0,0,0.03)', borderColor: 'rgba(0,0,0,0.08)' }} />
+                            </div>
+                        </div>
+                        <motion.button
+                            onClick={handleZkAddLiquidity}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            disabled={zkExecuting}
+                            className="w-full py-3 rounded-xl font-bold text-[12px] border-0 cursor-pointer"
+                            style={{
+                                background: zkExecuting ? 'rgba(0,0,0,0.06)' : 'linear-gradient(135deg,#2E7D32,#00A152)',
+                                color: zkExecuting ? '#8B93A4' : '#fff',
+                            }}
+                        >
+                            {zkExecuting ? 'Generating proof…' : 'Execute ZK Add Liquidity'}
+                        </motion.button>
+                        {zkError && (
+                            <p className="text-[10px] text-[#C62828] mt-2">{zkError}</p>
+                        )}
                     </GlassCard>
                 </div>
             </div>

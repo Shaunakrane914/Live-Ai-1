@@ -37,18 +37,20 @@ Exposes the DDPG-driven microgrid simulation via:
 from __future__ import annotations
 
 import asyncio
+import os
 import time
 import threading
 from typing import Any
 
 import numpy as np
+import torch
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from aegis_env import AegisEnv
-from ddpg_agent import DDPGAgent
+from ddpg_agent import DDPGAgent, Actor, DEVICE
 
 # ── App setup ─────────────────────────────────────────────────────────────────
 app = FastAPI(title="AegisGrid AI Engine", version="2.0.0")
@@ -73,6 +75,32 @@ TRAIN_EVERY   = 20               # DDPG update every N ticks
 
 # ── WebSocket client registry ─────────────────────────────────────────────────
 _ws_clients: set[WebSocket] = set()
+
+# ── Optional: Load pre-trained Actor weights (from train_agent.py output) ─────
+def _try_load_pretrained_actor():
+    """
+    If aegis_actor_weights.pth exists (produced by train_agent.py),
+    load it into the agent's actor for immediate live inference.
+    Falls back to untrained actor gracefully.
+    """
+    weights_path = os.path.join(os.path.dirname(__file__), "aegis_actor_weights.pth")
+    if not os.path.exists(weights_path):
+        print("[INFO] aegis_actor_weights.pth not found — using untrained DDPG actor.")
+        print("       Run train_agent.py to pre-train, then restart the server.")
+        return False
+    try:
+        agent.actor.load_state_dict(
+            torch.load(weights_path, map_location=DEVICE, weights_only=True)
+        )
+        agent.actor_target.load_state_dict(agent.actor.state_dict())
+        agent.actor.eval()
+        print("✅ Pre-trained DDPG Actor loaded from aegis_actor_weights.pth")
+        return True
+    except Exception as e:
+        print(f"[WARN] Could not load actor weights: {e} — using untrained actor.")
+        return False
+
+_ddpg_pretrained = _try_load_pretrained_actor()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -131,20 +159,20 @@ async def _simulation_loop():
 
         with _lock:
             # 1. DDPG → action (fee in [0.001, 0.05])
-            fee = agent.select_action(_obs, explore=True)
+            fee = agent.select_action(_obs, explore=not _ddpg_pretrained)
 
             # 2. Environment step
             next_obs, reward, terminated, truncated, info = env.step(
                 np.array([fee], dtype=np.float32)
             )
 
-            # 3. Store experience
+            # 3. Store experience (only train online when not using pretrained)
             agent.store(_obs, fee, reward, next_obs, float(terminated or truncated))
             _obs = next_obs
             _step_count += 1
 
-            # 4. Periodic DDPG training (non-blocking in same thread)
-            if _step_count % TRAIN_EVERY == 0:
+            # 4. Periodic DDPG training (skipped if pretrained weights loaded)
+            if not _ddpg_pretrained and _step_count % TRAIN_EVERY == 0:
                 agent.update()
 
             # 5. Episode reset
@@ -154,7 +182,7 @@ async def _simulation_loop():
             # 6. Build state dict
             _last_state = _build_state(info, fee, reward)
 
-        # 7. Broadcast to WebSocket clients
+        # 7. Broadcast to all WebSocket clients
         if _ws_clients:
             import json
             payload = json.dumps(_last_state)
@@ -166,7 +194,7 @@ async def _simulation_loop():
                     dead.add(ws)
             _ws_clients.difference_update(dead)
 
-        # Sleep for remainder of 500ms interval
+        # Sleep for remainder of 500ms tick interval
         elapsed = asyncio.get_event_loop().time() - start
         await asyncio.sleep(max(0.0, TICK_INTERVAL - elapsed))
 
@@ -175,6 +203,7 @@ async def _simulation_loop():
 async def startup():
     asyncio.create_task(_simulation_loop())
     print("✅ AegisGrid AI Engine started — simulation loop running at 500ms ticks")
+    print(f"   DDPG mode: {'pretrained inference' if _ddpg_pretrained else 'online learning'}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -183,7 +212,12 @@ async def startup():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "engine": "AegisGrid v2.0", "step": _step_count}
+    return {
+        "status":    "ok",
+        "engine":    "AegisGrid v2.0",
+        "step":      _step_count,
+        "ddpgMode":  "pretrained" if _ddpg_pretrained else "online",
+    }
 
 
 @app.get("/state", response_model=SimState)
@@ -233,8 +267,10 @@ def inject_chaos(event: str):
         "delivery_fail":   env.simulate_delivery_failure,
     }
     if event not in _map:
-        raise HTTPException(status_code=400,
-            detail=f"Unknown event '{event}'. Valid: {list(_map)}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown event '{event}'. Valid: {list(_map)}"
+        )
     _map[event]()
     return {"status": "injected", "event": event}
 
@@ -283,7 +319,6 @@ async def websocket_endpoint(ws: WebSocket):
     try:
         while True:
             try:
-                # Listen for chaos commands from the client (non-blocking)
                 data = await asyncio.wait_for(ws.receive_json(), timeout=0.05)
                 event = data.get("event", "")
                 if event:
@@ -292,7 +327,7 @@ async def websocket_endpoint(ws: WebSocket):
                     except HTTPException:
                         pass
             except asyncio.TimeoutError:
-                pass   # no message from client — normal
+                pass   # no client message — normal
     except WebSocketDisconnect:
         _ws_clients.discard(ws)
         print(f"[WS] Client disconnected — total: {len(_ws_clients)}")

@@ -23,3 +23,6 @@ web3>=6.15.0
 
 # ── Data preprocessing (aegis_training_data.csv) ─────
 pandas>=2.2.0
+
+# ── Node.js gateway socket client (watch_tick.py) ─────
+python-socketio[asyncio_client]>=5.0.0

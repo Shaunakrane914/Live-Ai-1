@@ -161,7 +161,7 @@ class OracleBridge:
         self.oracle_wallet = None
 
         if not self.w3.is_connected():
-            print("⚠️  Web3 Not Connected. Running in simulation-only mode.")
+            print("[WARN] Web3 Not Connected. Running in simulation-only mode.")
             print("    Start Hardhat: cd blockchain && npx hardhat node")
             return
 
@@ -170,7 +170,7 @@ class OracleBridge:
         # ── Auto-load from deployment.json (written by deploy.js) ─────
         deployment_path = os.path.join(os.path.dirname(__file__), "deployment.json")
         if not os.path.exists(deployment_path):
-            print("⚠️  deployment.json not found. Run: cd blockchain && npx hardhat run scripts/deploy.js --network localhost")
+            print("[WARN] deployment.json not found. Run: cd blockchain && npx hardhat run scripts/deploy.js --network localhost")
             return
 
         with open(deployment_path, "r") as f:
@@ -193,7 +193,7 @@ class OracleBridge:
             with open(token_artifact_path, "r") as f:
                 token_abi = json.load(f)["abi"]
         except FileNotFoundError as e:
-            print(f"⚠️  ABI file not found: {e}")
+            print(f"[WARN] ABI file not found: {e}")
             print("    Run: cd blockchain && npx hardhat compile")
             return
 
@@ -216,7 +216,7 @@ class OracleBridge:
             fee = self.amm_contract.functions.swapFeeBPS().call()
             print(f"   Pool: x={x} kWh | y={y} USDC | fee={fee/100:.2f}%")
         except Exception as e:
-            print(f"   ⚠️  Pool read failed: {e}")
+            print(f"   [WARN] Pool read failed: {e}")
 
     # ── On-chain write: DDPG fee update ──────────────────────────────
     def update_swap_fee(self, new_fee_pct: float):
