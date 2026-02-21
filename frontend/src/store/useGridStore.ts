@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { OhlcCandle } from '../hooks/useOhlcAggregator'
 
 // ── Types ─────────────────────────────────────────────────────────
 export type EventType = 'SWAP' | 'ZK_VERIFIED' | 'SLASH' | 'CHAOS' | 'LIQUIDITY'
@@ -40,10 +41,14 @@ export interface GridState {
     // Event stream (capped at 50)
     events: GridEvent[]
 
+    // OHLC candle history — accumulated from app start (capped at 500)
+    ohlcCandles: OhlcCandle[]
+
     // Zustand actions
-    applyTick: (tick: Omit<GridState, 'connected' | 'lastTickAt' | 'events' | 'applyTick' | 'pushEvent' | 'setConnected'>) => void
+    applyTick: (tick: Omit<GridState, 'connected' | 'lastTickAt' | 'events' | 'ohlcCandles' | 'applyTick' | 'pushEvent' | 'setConnected' | 'pushOhlcCandle'>) => void
     pushEvent: (event: GridEvent) => void
     setConnected: (v: boolean) => void
+    pushOhlcCandle: (candle: OhlcCandle) => void
 }
 
 // ── Store ──────────────────────────────────────────────────────────
@@ -61,6 +66,7 @@ export const useGridStore = create<GridState>((set) => ({
     connected: false,
     lastTickAt: 0,
     events: [],
+    ohlcCandles: [],
 
     applyTick: (tick) =>
         set((s) => {
@@ -82,6 +88,11 @@ export const useGridStore = create<GridState>((set) => ({
     pushEvent: (event) =>
         set((s) => ({
             events: [event, ...s.events].slice(0, 50),
+        })),
+
+    pushOhlcCandle: (candle) =>
+        set((s) => ({
+            ohlcCandles: [...s.ohlcCandles, candle].slice(-500),
         })),
 
     setConnected: (v) => set({ connected: v }),

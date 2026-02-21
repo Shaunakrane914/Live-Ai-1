@@ -1,13 +1,8 @@
 /**
  * SwapFeeChart — lightweight-charts v5
  * ─────────────────────────────────────
- * Canvas-based OHLC candlestick chart for DDPG swap fee visualisation.
- *
- * Architecture:
- *   - TradingView `lightweight-charts` v5 renders directly to a <canvas>
- *   - Chart instance held in a React ref → zero React re-renders on tick
- *   - Zustand .subscribe() fires the OHLC aggregator on every tick
- *   - series.update() is called imperatively → smooth 60-FPS animation
+ * Reads OHLC history from Zustand (accumulated since app start in WebSocketProvider).
+ * Subscribes to ohlcCandles updates for live streaming — zero React re-renders.
  */
 
 import { useEffect, useRef } from 'react'
@@ -19,8 +14,6 @@ import {
     type ISeriesApi,
 } from 'lightweight-charts'
 import { useGridStore } from '../../store/useGridStore'
-import { useOhlcAggregator } from '../../hooks/useOhlcAggregator'
-import type { OhlcCandle } from '../../hooks/useOhlcAggregator'
 
 // ── Palette — dark trading terminal ───────────────────────────────
 const THEME = {
@@ -35,9 +28,8 @@ export default function SwapFeeChart() {
     const containerRef = useRef<HTMLDivElement>(null)
     const chartRef = useRef<IChartApi | null>(null)
     const seriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
-    const aggregator = useOhlcAggregator()
 
-    // ── Mount: create chart once ───────────────────────────────────
+    // ── Mount: create chart + seed with all accumulated history ───
     useEffect(() => {
         if (!containerRef.current) return
 
@@ -70,7 +62,6 @@ export default function SwapFeeChart() {
             height: containerRef.current.clientHeight,
         })
 
-        // v5 API: chart.addSeries(CandlestickSeries, options)
         const series = chart.addSeries(CandlestickSeries, {
             upColor: THEME.bull,
             downColor: THEME.bear,
@@ -82,6 +73,13 @@ export default function SwapFeeChart() {
 
         chartRef.current = chart
         seriesRef.current = series
+
+        // ── Seed with ALL candles accumulated since app start ──────
+        const history = useGridStore.getState().ohlcCandles
+        if (history.length > 0) {
+            series.setData([...history])
+            chart.timeScale().fitContent()
+        }
 
         // Responsive resize
         const ro = new ResizeObserver(() => {
@@ -99,26 +97,24 @@ export default function SwapFeeChart() {
             chart.remove()
             chartRef.current = null
             seriesRef.current = null
-            aggregator.reset()
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    // ── Subscribe to Zustand OUTSIDE React render cycle ───────────
+    // ── Subscribe to new candles from Zustand (outside render cycle)
     useEffect(() => {
-        // Zustand subscribe with a selector — no re-renders
+        let prevLen = useGridStore.getState().ohlcCandles.length
+
         const unsub = useGridStore.subscribe((state) => {
             if (!seriesRef.current) return
+            const candles = state.ohlcCandles
+            if (candles.length === prevLen) return  // nothing new
 
-            const { completed, live } = aggregator.push(state.swapFee)
-
-            if (completed) {
-                seriesRef.current.update(completed as OhlcCandle)
-            }
-            seriesRef.current.update(live as OhlcCandle)
+            // Push only the newly added candle(s)
+            const newCandles = candles.slice(prevLen)
+            newCandles.forEach(c => seriesRef.current!.update(c))
+            prevLen = candles.length
         })
         return unsub
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return (
@@ -147,7 +143,7 @@ export default function SwapFeeChart() {
                 </div>
             </div>
 
-            {/* Canvas mount point — lightweight-charts owns this div */}
+            {/* Canvas mount point */}
             <div ref={containerRef} className="w-full h-full" />
         </div>
     )

@@ -4,6 +4,7 @@ import {
 } from 'react'
 import { io, type Socket } from 'socket.io-client'
 import { useGridStore, type EventType, type GridEvent } from '../store/useGridStore'
+import { useOhlcAggregator } from '../hooks/useOhlcAggregator'
 
 // ── Config ─────────────────────────────────────────────────────────
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8000'
@@ -96,18 +97,26 @@ export function useSocketEmit() {
 interface WebSocketProviderProps { children: ReactNode }
 
 export default function WebSocketProvider({ children }: WebSocketProviderProps) {
-    const { applyTick, pushEvent, setConnected } = useGridStore()
+    const { applyTick, pushEvent, setConnected, pushOhlcCandle } = useGridStore()
     const socketRef = useRef<Socket | null>(null)
     const mockTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const evtTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const connectedRef = useRef(false)
     // Delta-tracking: holds the previous tick to detect state changes
     const prevTickRef = useRef<Record<string, number> | null>(null)
+    // OHLC aggregator — lives at app level, not page level
+    const ohlc = useOhlcAggregator()
 
     function startMockSimulation() {
-        if (mockTimerRef.current) return   // already running
+        if (mockTimerRef.current) return
         log.warn('Starting MOCK simulation (gateway offline)')
-        mockTimerRef.current = setInterval(() => applyTick(generateMockTick()), MOCK_INTERVAL)
+        mockTimerRef.current = setInterval(() => {
+            const tick = generateMockTick()
+            applyTick(tick)
+            // Feed mock ticks into the global OHLC aggregator
+            const { completed, live: _live } = ohlc.push(tick.swapFee)
+            if (completed) pushOhlcCandle(completed)
+        }, MOCK_INTERVAL)
         evtTimerRef.current = setInterval(() => pushEvent(generateMockEvent()), 2500)
     }
 
@@ -233,6 +242,12 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
                 swapFee: data.swapFee,
                 price: data.price,
                 reward: data.reward ?? 0,
+            }
+
+            // ── 4. Feed real tick into global OHLC aggregator ───────
+            if (data.swapFee != null) {
+                const { completed } = ohlc.push(data.swapFee)
+                if (completed) pushOhlcCandle(completed)
             }
 
             applyTick(data)
