@@ -8,6 +8,7 @@ import { useGridStore } from '../store/useGridStore'
 import { useAegisAMM } from '../hooks/useAegisAMM'
 import GlassCard from '../components/ui/GlassCard'
 import SwapFeeChart from '../components/charts/SwapFeeChart'
+import PageInfo from '../components/ui/PageInfo'
 
 const fadeUp = {
     initial: { opacity: 0, y: 14 },
@@ -115,11 +116,21 @@ export default function AmmPage() {
         <motion.div {...fadeUp} className="h-full flex flex-col gap-4">
             {/* Header with Tabs */}
             <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-xl font-bold text-[#1A1D23] tracking-tight">AMM Trading Floor</h1>
-                    <p className="text-[11px] text-[#8B93A4] mt-0.5 uppercase tracking-widest">
-                        x · y = k  ·  RL Fee Control  ·  ZK-Verified Settlement
-                    </p>
+                <div className="flex items-center gap-3">
+                    <div>
+                        <h1 className="text-xl font-bold text-[#1A1D23] tracking-tight">AMM Trading Floor</h1>
+                        <p className="text-[11px] text-[#8B93A4] mt-0.5 uppercase tracking-widest">
+                            x · y = k  ·  RL Fee Control  ·  ZK-Verified Settlement
+                        </p>
+                    </div>
+                    <PageInfo 
+                        title="ERC-1155 AMM Floor"
+                        description={[
+                            "This is the financial settlement layer where physical energy is traded via smart contracts.",
+                            "The live charts track the AI's real-time adjustments to the Swap Fee to manage grid volatility.",
+                            "Liquidity providers can stake energy using zk-SNARKs to keep their hardware data private."
+                        ]}
+                    />
                 </div>
                 
                 {/* Tab Toggle */}

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useGridStore } from '../store/useGridStore'
+import PageInfo from '../components/ui/PageInfo'
 
 const fadeUp = {
     initial: { opacity: 0, y: 14 },
@@ -61,19 +62,31 @@ export default function ZkTerminalPage() {
             style={{ background: '#0F1115' }}
         >
             {/* ── Page header ─────────────────────────────────────── */}
-            <div>
-                <h1
-                    className="text-xl font-bold tracking-tight font-mono"
-                    style={{ color: '#E6EDF3' }}
-                >
-                    ZK Terminal
-                </h1>
-                <p
-                    className="text-[11px] uppercase tracking-wider font-mono mt-0.5"
-                    style={{ color: '#9DA7B3' }}
-                >
-                    Cryptographic proof settlement · On-chain slash registry
-                </p>
+            <div className="flex items-start gap-3">
+                <div>
+                    <h1
+                        className="text-xl font-bold tracking-tight font-mono"
+                        style={{ color: '#E6EDF3' }}
+                    >
+                        ZK Terminal
+                    </h1>
+                    <p
+                        className="text-[11px] uppercase tracking-wider font-mono mt-0.5"
+                        style={{ color: '#9DA7B3' }}
+                    >
+                        Cryptographic proof settlement · On-chain slash registry
+                    </p>
+                </div>
+                <div className="mt-0.5">
+                    <PageInfo 
+                        title="Cryptographic Settlement"
+                        description={[
+                            "This terminal manages the Groth16 zk-SNARK proof generation for the network.",
+                            "Nodes generate mathematical proofs of their energy surplus without revealing their raw physical data.",
+                            "The blockchain verifies the proof, ensuring trustless market participation while maintaining absolute privacy."
+                        ]}
+                    />
+                </div>
             </div>
 
             {/* ── Main 3-col grid ─────────────────────────────────── */}

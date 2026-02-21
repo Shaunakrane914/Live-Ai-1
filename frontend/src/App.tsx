@@ -7,6 +7,7 @@ import OverviewPage from './pages/OverviewPage'
 import AmmPage from './pages/AmmPage'
 import NodePage from './pages/NodePage'
 import ZkTerminalPage from './pages/ZkTerminalPage'
+import AboutPage from './pages/AboutPage'
 import './index.css'
 
 // Full-screen intro component
@@ -83,6 +84,7 @@ function App() {
               <Route path="/amm" element={<AmmPage />} />
               <Route path="/node/:id" element={<NodePage />} />
               <Route path="/zk-terminal" element={<ZkTerminalPage />} />
+              <Route path="/about" element={<AboutPage />} />
             </Routes>
           </DashboardLayout>
         </motion.div>

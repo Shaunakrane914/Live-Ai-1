@@ -1,5 +1,6 @@
 import { Suspense, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import { useGridStore } from '../store/useGridStore'
 import MicrogridCanvas from '../components/three/MicrogridCanvas'
 
@@ -68,7 +69,9 @@ function MetricRow({ label, value, unit, tone }: { label: string; value: string;
 
 export default function OverviewPage() {
   const { nodes } = useGridStore()
+  const navigate = useNavigate()
   const [showContent, setShowContent] = useState(false)
+  const [showBanner, setShowBanner] = useState(true)
   const activeNodes = nodes?.length || 15
 
   // Trigger content animation after mount
@@ -97,6 +100,73 @@ export default function OverviewPage() {
 
       {/* Main Canvas Container with Telemetry Inside */}
       <div className="flex-1 min-h-0 rounded-3xl bg-slate-950/40 overflow-hidden relative">
+        {/* Confused About Us Banner */}
+        {showBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2, duration: 0.5 }}
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-30"
+          >
+            <motion.button
+              onClick={() => navigate('/about')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative group"
+            >
+              {/* Glow effect */}
+              <motion.div
+                className="absolute inset-0 rounded-full blur-xl opacity-60"
+                animate={{
+                  background: [
+                    'radial-gradient(circle, rgba(99,102,241,0.6), transparent 70%)',
+                    'radial-gradient(circle, rgba(168,85,247,0.6), transparent 70%)',
+                    'radial-gradient(circle, rgba(99,102,241,0.6), transparent 70%)'
+                  ]
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
+              
+              {/* Main banner */}
+              <div className="relative flex items-center gap-4 px-7 py-4 bg-slate-900/90 backdrop-blur-md border border-indigo-500/50 rounded-full shadow-2xl">
+                <motion.span 
+                  className="text-2xl"
+                  animate={{ rotate: [0, 15, -15, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  💡
+                </motion.span>
+                <div className="text-left">
+                  <p className="text-[13px] text-indigo-300 font-semibold uppercase tracking-wider">
+                    Confused?
+                  </p>
+                  <p className="text-base text-slate-200 font-medium">
+                    Learn how Aegis works →
+                  </p>
+                </div>
+                <motion.div
+                  className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center"
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                >
+                  <span className="text-indigo-300 text-sm">›</span>
+                </motion.div>
+              </div>
+              
+              {/* Close button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowBanner(false)
+                }}
+                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-700 border border-slate-600 text-slate-400 text-xs hover:bg-slate-600 transition-colors flex items-center justify-center"
+              >
+                ×
+              </button>
+            </motion.button>
+          </motion.div>
+        )}
+
         <div className="h-full" style={{ contain: 'strict', willChange: 'transform' }}>
           <Suspense fallback={
             <div className="flex h-full items-center justify-center text-slate-500 text-sm">Loading…</div>

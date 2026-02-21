@@ -1,0 +1,39 @@
+<svg width="600" height="200" viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .box { fill: #171A21; stroke: #2A2E39; stroke-width: 2; rx: 6; }
+    .box-prover { fill: rgba(0, 230, 118, 0.05); stroke: #00E676; stroke-width: 2; rx: 6; }
+    .title { font-size: 12px; font-weight: bold; fill: #E6EDF3; letter-spacing: 1px; }
+    .title-green { font-size: 12px; font-weight: bold; fill: #00E676; letter-spacing: 1px; }
+    .sub { font-size: 10px; fill: #9DA7B3; }
+    .sub-blue { font-size: 10px; fill: #4DA3FF; }
+    .line { stroke: #4DA3FF; stroke-width: 2; stroke-dasharray: 4; fill: none; }
+    .line-green { stroke: #00E676; stroke-width: 2; fill: none; }
+    .arrow-blue { fill: #4DA3FF; }
+    .arrow-green { fill: #00E676; }
+  </style>
+
+  <rect x="20" y="60" width="140" height="80" class="box" />
+  <text x="90" y="85" text-anchor="middle" class="font-mono title">PROSUMER NODE</text>
+  <text x="90" y="105" text-anchor="middle" class="font-mono sub">Private Input:</text>
+  <text x="90" y="120" text-anchor="middle" class="font-mono sub-blue">Load / Generation</text>
+
+  <path d="M 160 100 L 210 100" class="line" />
+  <polygon points="210,96 218,100 210,104" class="arrow-blue" />
+  <text x="189" y="90" text-anchor="middle" class="font-mono sub">Witness</text>
+
+  <rect x="225" y="50" width="150" height="100" class="box-prover" />
+  <text x="300" y="75" text-anchor="middle" class="font-mono title-green">GROTH16 PROVER</text>
+  <text x="300" y="95" text-anchor="middle" class="font-mono sub">R1CS Constraints</text>
+  <text x="300" y="115" text-anchor="middle" class="font-mono sub">Generate zk-SNARK</text>
+  <text x="300" y="135" text-anchor="middle" class="font-mono title-green">π = (A, B, C)</text>
+
+  <path d="M 375 100 L 425 100" class="line-green" />
+  <polygon points="425,96 433,100 425,104" class="arrow-green" />
+  <text x="404" y="90" text-anchor="middle" class="font-mono sub">Proof π</text>
+
+  <rect x="440" y="60" width="140" height="80" class="box" />
+  <text x="510" y="85" text-anchor="middle" class="font-mono title">AEGIS AMM</text>
+  <text x="510" y="105" text-anchor="middle" class="font-mono sub">On-chain Contract</text>
+  <text x="510" y="125" text-anchor="middle" class="font-mono title-green">Verify(π) == True</text>
+</svg>

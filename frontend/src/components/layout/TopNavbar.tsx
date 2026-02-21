@@ -10,6 +10,7 @@ const ROUTES = [
     { to: '/amm', label: 'AMM Floor' },
     { to: '/node/1', label: 'Prosumer' },
     { to: '/zk-terminal', label: 'ZK Terminal' },
+    { to: '/about', label: 'About' },
 ]
 
 const CHAOS_BTNS = [

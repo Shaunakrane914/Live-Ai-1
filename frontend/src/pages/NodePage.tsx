@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useGridStore } from '../store/useGridStore'
+import PageInfo from '../components/ui/PageInfo'
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -377,18 +378,28 @@ export default function NodePage() {
     <motion.div {...fadeUp} className="h-full flex flex-col gap-4" style={{ perspective: '1200px' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <button
-            onClick={() => navigate('/overview')}
-            className="text-[10px] text-blue-400 mb-1 hover:text-blue-300 flex items-center gap-1 transition-colors"
-          >
-            ← Grid Overview
-          </button>
-          <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Prosumer Node #{nodeId}</h1>
-          <p className="text-[11px] text-slate-500 uppercase tracking-wider">
-            On-chain prosumer · ZK-verified · DDPG Agent
-            {liveNode && <span className="ml-2 text-emerald-400">● LIVE</span>}
-          </p>
+        <div className="flex items-center gap-3">
+          <div>
+            <button
+              onClick={() => navigate('/overview')}
+              className="text-[10px] text-blue-400 mb-1 hover:text-blue-300 flex items-center gap-1 transition-colors"
+            >
+              ← Grid Overview
+            </button>
+            <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Prosumer Node #{nodeId}</h1>
+            <p className="text-[11px] text-slate-500 uppercase tracking-wider">
+              On-chain prosumer · ZK-verified · DDPG Agent
+              {liveNode && <span className="ml-2 text-emerald-400">● LIVE</span>}
+            </p>
+          </div>
+          <PageInfo 
+            title="Prosumer Terminal"
+            description={[
+              "This is the individual telemetry for a single autonomous household in the microgrid.",
+              "The Auto-Aegis Agent continuously evaluates local battery levels and market prices to trade autonomously.",
+              "Zero-Knowledge proofs ensure the node's physical load data is never exposed on the public blockchain."
+            ]}
+          />
         </div>
         
         <div className="flex flex-wrap gap-1 max-w-[200px] justify-end">
