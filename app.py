@@ -24,6 +24,7 @@ import threading
 import time
 import argparse
 import shutil
+import re
 
 # ── Resolve root directory (parent of this file) ──────────────────────
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -67,6 +68,30 @@ def find_python() -> str:
     if os.path.exists(venv_py2):
         return venv_py2
     return sys.executable   # fall back to the python running this script
+
+
+def kill_port(port: int):
+    """Kill any process already listening on `port` so we avoid EADDRINUSE."""
+    try:
+        if sys.platform == "win32":
+            out = subprocess.check_output(
+                f"netstat -ano | findstr :{port}", shell=True,
+                stderr=subprocess.DEVNULL
+            ).decode()
+            pids = set(re.findall(r'(\d+)\s*$', out, re.MULTILINE))
+            for pid in pids:
+                if pid and pid != '0':
+                    subprocess.call(
+                        ["taskkill", "/F", "/PID", pid],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                    )
+        else:
+            subprocess.call(
+                f"lsof -ti tcp:{port} | xargs kill -9",
+                shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+    except Exception:
+        pass   # port was free — nothing to kill
 
 
 def check_deps():
@@ -151,6 +176,12 @@ def main():
     banner(args.prod)
     check_deps()
 
+    # Kill anything already on those ports so we don't hit EADDRINUSE
+    ports_to_clear = [8001, 8000] + ([] if args.prod else [5173])
+    for p in ports_to_clear:
+        kill_port(p)
+        time.sleep(0.1)
+
     procs = start_services(prod=args.prod)
 
     if not procs:
@@ -187,12 +218,14 @@ def main():
     signal.signal(signal.SIGINT,  shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
-    # Keep alive — monitor processes and restart if they crash
+    # Keep alive — monitor processes, warn once if one crashes
+    crashed: set[int] = set()
     while True:
         time.sleep(3)
         for p in procs:
-            if p.poll() is not None:
-                print(f"\n  ⚠  A service (pid {p.pid}) exited unexpectedly.")
+            if p.pid not in crashed and p.poll() is not None:
+                crashed.add(p.pid)
+                print(f"\n  \u26a0  A service (pid {p.pid}) exited unexpectedly.")
 
 
 if __name__ == "__main__":

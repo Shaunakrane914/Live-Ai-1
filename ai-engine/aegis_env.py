@@ -130,7 +130,9 @@ class AegisEnv(gym.Env):
 
     def step(self, action):
         # Clamp action to valid fee range
-        swap_fee = float(np.clip(action, FEE_MIN, FEE_MAX))
+        # Support both scalar float and 1-D array (e.g. np.array([0.03]))
+        _a = float(np.asarray(action).flat[0])
+        swap_fee = float(np.clip(_a, FEE_MIN, FEE_MAX))
 
         # Advance physics
         raw = self.physics.step(
