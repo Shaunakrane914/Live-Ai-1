@@ -10,6 +10,15 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8000'
 const MOCK_INTERVAL = 500
 const EVENT_TYPES: EventType[] = ['SWAP', 'ZK_VERIFIED', 'SLASH', 'CHAOS', 'LIQUIDITY']
 
+// ── Debug logger (always on so we can see what's happening) ────────
+const log = {
+    info: (...a: unknown[]) => console.log('%c[AegisWS]', 'color:#4DA3FF;font-weight:bold', ...a),
+    warn: (...a: unknown[]) => console.warn('%c[AegisWS]', 'color:#FF9100;font-weight:bold', ...a),
+    event: (...a: unknown[]) => console.log('%c[EVENT]', 'color:#00C853;font-weight:bold', ...a),
+    tick: (...a: unknown[]) => console.debug('%c[TICK]', 'color:#8B93A4;font-weight:bold', ...a),
+    slash: (...a: unknown[]) => console.log('%c[SLASH 🔴]', 'color:#FF6B6B;font-weight:bold', ...a),
+}
+
 // ── Mock helpers ───────────────────────────────────────────────────
 let _mockGeneration = 158.3, _mockPrice = 0.0842, _mockSwapFee = 1.34
 let _mockEnergy = 5000, _mockStable = 421, _mockReward = 0.847
@@ -36,6 +45,7 @@ function generateMockTick() {
         stableReserve: parseFloat(_mockStable.toFixed(1)),
         reward: parseFloat(_mockReward.toFixed(3)),
         gridImbalance: parseFloat(imbalance.toFixed(2)),
+        nodes: [],
     }
 }
 
@@ -49,7 +59,10 @@ const EVENT_MESSAGES: Record<EventType, () => string> = {
 
 function generateMockEvent(): GridEvent {
     const type = EVENT_TYPES[Math.floor(Math.random() * EVENT_TYPES.length)]
-    return { id: `evt-${++_eventCounter}-${Date.now()}`, type, message: EVENT_MESSAGES[type](), timestamp: Date.now() }
+    const evt = { id: `evt-${++_eventCounter}-${Date.now()}`, type, message: EVENT_MESSAGES[type](), timestamp: Date.now() }
+    if (type === 'SLASH') log.slash('[MOCK]', evt.message)
+    else log.event('[MOCK]', type, evt.message)
+    return evt
 }
 
 // ── Context — expose socket emit ───────────────────────────────────
@@ -71,23 +84,28 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
     const socketRef = useRef<Socket | null>(null)
     const mockTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const evtTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    const connectedRef = useRef(false)   // track real connection so mock doesn't race
 
     function startMockSimulation() {
-        if (mockTimerRef.current) return
+        if (mockTimerRef.current) return   // already running
+        log.warn('Starting MOCK simulation (gateway offline)')
         mockTimerRef.current = setInterval(() => applyTick(generateMockTick()), MOCK_INTERVAL)
         evtTimerRef.current = setInterval(() => pushEvent(generateMockEvent()), 2500)
     }
 
     function stopMockSimulation() {
-        if (mockTimerRef.current) { clearInterval(mockTimerRef.current); mockTimerRef.current = null }
-        if (evtTimerRef.current) { clearInterval(evtTimerRef.current); evtTimerRef.current = null }
+        if (!mockTimerRef.current) return
+        log.info('Stopping MOCK simulation (gateway connected)')
+        clearInterval(mockTimerRef.current); mockTimerRef.current = null
+        clearInterval(evtTimerRef.current!); evtTimerRef.current = null
     }
 
     const socketEmit = (event: string, data?: unknown) => {
         if (socketRef.current?.connected) {
+            log.info(`Emitting ${event}`, data)
             socketRef.current.emit(event, data)
         } else {
-            // In mock mode — simulate the chaos effect locally by injecting an event
+            log.warn(`Socket offline — simulating ${event} locally`)
             pushEvent({
                 id: `chaos-${Date.now()}`,
                 type: 'CHAOS',
@@ -98,6 +116,8 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
     }
 
     useEffect(() => {
+        log.info(`Connecting to gateway at ${SOCKET_URL} …`)
+
         const socket = io(SOCKET_URL, {
             transports: ['websocket'],
             reconnectionAttempts: 5,
@@ -106,15 +126,74 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
         })
         socketRef.current = socket
 
-        socket.on('connect', () => { setConnected(true); stopMockSimulation() })
-        socket.on('disconnect', () => { setConnected(false); startMockSimulation() })
-        socket.on('connect_error', () => { if (!socketRef.current?.connected) { setConnected(false); startMockSimulation() } })
-        socket.on('simulation_tick', (data) => applyTick(data))
-        socket.on('grid_event', (evt) => pushEvent(evt))
+        socket.on('connect', () => {
+            connectedRef.current = true
+            log.info(`✅ Socket connected  id=${socket.id}`)
+            setConnected(true)
+            stopMockSimulation()   // ← kill mock ONLY on real connect
+        })
 
-        startMockSimulation()
+        socket.on('disconnect', (reason) => {
+            connectedRef.current = false
+            log.warn(`Socket disconnected — reason: ${reason}`)
+            setConnected(false)
+            startMockSimulation()
+        })
 
-        return () => { stopMockSimulation(); socket.disconnect() }
+        socket.on('connect_error', (err) => {
+            log.warn(`Connection error: ${err.message}`)
+            if (!connectedRef.current) {
+                setConnected(false)
+                startMockSimulation()
+            }
+        })
+
+        socket.on('simulation_tick', (data) => {
+            log.tick('tick', {
+                gen: data.generation,
+                load: data.gridLoad,
+                fee: data.swapFee,
+                nodes: data.nodes?.length ?? 'none',
+                events: data.events?.length ?? 0,
+            })
+
+            // Surface any slash events embedded in the tick
+            if (Array.isArray(data.events) && data.events.length > 0) {
+                data.events.forEach((e: { node?: string; penalty_usdc?: number }) => {
+                    const msg = `${e.penalty_usdc ?? '?'} USDC seized from ${e.node ?? 'unknown'}`
+                    log.slash('[REAL]', msg)
+                    pushEvent({
+                        id: `slash-${Date.now()}-${Math.random()}`,
+                        type: 'SLASH',
+                        message: msg,
+                        timestamp: Date.now(),
+                    })
+                })
+            }
+
+            applyTick(data)
+        })
+
+        socket.on('grid_event', (evt) => {
+            if (evt.type === 'SLASH') log.slash('[GATEWAY]', evt.message)
+            else log.event('[GATEWAY]', evt.type, evt.message)
+            pushEvent(evt)
+        })
+
+        // ⚠ DO NOT call startMockSimulation() here — wait for connect_error / disconnect
+        // We give the socket 3s to connect before falling back to mock
+        const fallbackTimer = setTimeout(() => {
+            if (!connectedRef.current) {
+                log.warn('3s timeout — gateway unreachable, starting mock')
+                startMockSimulation()
+            }
+        }, 3000)
+
+        return () => {
+            clearTimeout(fallbackTimer)
+            stopMockSimulation()
+            socket.disconnect()
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
