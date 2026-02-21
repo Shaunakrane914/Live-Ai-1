@@ -3,32 +3,9 @@ import { motion } from 'framer-motion'
 import { useGridStore } from '../store/useGridStore'
 import MicrogridCanvas from '../components/three/MicrogridCanvas'
 
-function StatCard({ label, value, subtext, color = 'slate' }: { 
-  label: string; 
-  value: string; 
-  subtext?: string;
-  color?: 'slate' | 'emerald' | 'blue' | 'amber';
-}) {
-  const colorClasses = {
-    slate: 'text-slate-300',
-    emerald: 'text-emerald-400',
-    blue: 'text-blue-400',
-    amber: 'text-amber-400',
-  }
-  return (
-    <div className="flex flex-col">
-      <p className="text-[10px] text-slate-500 uppercase tracking-wider">{label}</p>
-      <p className={`text-lg font-semibold leading-tight ${colorClasses[color]}`}>{value}</p>
-      {subtext && <p className="text-[10px] text-slate-600 mt-0.5">{subtext}</p>}
-    </div>
-  )
-}
-
 export default function OverviewPage() {
-  const { nodes, generation, gridLoad, price } = useGridStore()
+  const { nodes } = useGridStore()
   const activeNodes = nodes?.length || 15
-  const healthyNodes = nodes?.filter(n => n.battery_soc > 20).length || activeNodes
-  const healthPercent = Math.round((healthyNodes / activeNodes) * 100)
 
   return (
     <motion.div
@@ -37,45 +14,16 @@ export default function OverviewPage() {
       transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] as const }}
       className="h-full flex flex-col"
     >
-      {/* Header with Stats */}
-      <div className="mb-4">
-        <div className="mb-3">
-          <p className="text-base font-semibold text-slate-200">Microgrid Network</p>
-          <p className="text-[11px] text-slate-500">
-            {activeNodes} nodes • P2P trading • ERC-1155
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <StatCard 
-            label="Nodes" 
-            value={String(activeNodes)} 
-            subtext={`${healthyNodes} healthy`}
-            color="blue"
-          />
-          <StatCard 
-            label="Health" 
-            value={`${healthPercent}%`} 
-            subtext={healthPercent > 90 ? 'Optimal' : 'Degraded'}
-            color={healthPercent > 90 ? 'emerald' : 'amber'}
-          />
-          <StatCard 
-            label="Price" 
-            value={`${price.toFixed(3)}`}
-            subtext="USDC/kWh"
-            color="slate"
-          />
-          <StatCard 
-            label="Flow" 
-            value={`${(generation - gridLoad).toFixed(1)}`}
-            subtext={generation > gridLoad ? 'kW Surplus' : 'kW Deficit'}
-            color={generation > gridLoad ? 'emerald' : 'amber'}
-          />
-        </div>
+      {/* Header */}
+      <div className="mb-3">
+        <p className="text-base font-semibold text-slate-200">Microgrid Network</p>
+        <p className="text-[11px] text-slate-500">
+          {activeNodes} nodes • P2P trading • ERC-1155
+        </p>
       </div>
 
-      {/* Main Canvas */}
-      <div className="flex-1 min-h-0 rounded-3xl bg-slate-950/40 overflow-hidden">
+      {/* Main Canvas with Stats Overlay */}
+      <div className="flex-1 min-h-0 rounded-3xl bg-slate-950/40 overflow-hidden relative">
         <div className="h-full" style={{ contain: 'strict', willChange: 'transform' }}>
           <Suspense
             fallback={

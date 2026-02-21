@@ -167,6 +167,12 @@ export default function MicrogridCanvas() {
     const orbitRef = useRef<OrbitControlsImpl>(null)
     const [visible, setVisible] = useState(true)
 
+    // Get store data for stats overlay
+    const { nodes, generation, gridLoad, price } = useGridStore()
+    const activeNodes = nodes?.length || 15
+    const healthyNodes = nodes?.filter(n => n.battery_soc > 20).length || activeNodes
+    const healthPercent = Math.round((healthyNodes / activeNodes) * 100)
+
     // Pause rendering when tab is hidden
     useEffect(() => {
         const handleVisibility = () => setVisible(!document.hidden)
@@ -176,8 +182,32 @@ export default function MicrogridCanvas() {
 
     return (
         <div className="w-full h-full relative">
-            {/* Legend */}
-            <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 pointer-events-none">
+            {/* Stats Overlay - Top Left */}
+            <div className="absolute top-4 left-4 z-10 flex gap-6 pointer-events-none">
+                <div className="flex flex-col">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">Nodes</p>
+                    <p className="text-lg font-semibold leading-tight text-blue-400">{activeNodes}</p>
+                    <p className="text-[10px] text-slate-600 mt-0.5">{healthyNodes} healthy</p>
+                </div>
+                <div className="flex flex-col">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">Health</p>
+                    <p className={`text-lg font-semibold leading-tight ${healthPercent > 90 ? 'text-emerald-400' : 'text-amber-400'}`}>{healthPercent}%</p>
+                    <p className="text-[10px] text-slate-600 mt-0.5">{healthPercent > 90 ? 'Optimal' : 'Degraded'}</p>
+                </div>
+                <div className="flex flex-col">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">Price</p>
+                    <p className="text-lg font-semibold leading-tight text-slate-300">{price.toFixed(3)}</p>
+                    <p className="text-[10px] text-slate-600 mt-0.5">USDC/kWh</p>
+                </div>
+                <div className="flex flex-col">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">Flow</p>
+                    <p className={`text-lg font-semibold leading-tight ${generation > gridLoad ? 'text-emerald-400' : 'text-amber-400'}`}>{(generation - gridLoad).toFixed(1)}</p>
+                    <p className="text-[10px] text-slate-600 mt-0.5">{generation > gridLoad ? 'kW Surplus' : 'kW Deficit'}</p>
+                </div>
+            </div>
+
+            {/* Legend - below stats */}
+            <div className="absolute bottom-12 left-4 z-10 flex flex-col gap-1.5 pointer-events-none">
                 {(Object.entries(BEHAVIOR_COLORS) as [NodeBehavior, string][]).filter(([k]) => k !== 'neutral').map(([key, color]) => (
                     <div key={key} className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-full" style={{ background: color }} />
