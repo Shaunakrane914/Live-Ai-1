@@ -13,15 +13,7 @@ export default function OverviewPage() {
             transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] as const }}
             className="h-full flex flex-col"
         >
-            <div className="mb-3 flex items-baseline justify-between">
-                <div>
-                    <p className="text-sm font-semibold text-slate-200 tracking-tight">
-                        Autonomous Microgrid Network
-                    </p>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-[0.24em] mt-1">
-                        15 AI-governed prosumer nodes trading peer-to-peer via ERC-1155.
-                    </p>
-                </div>
+            <div className="mb-3 flex items-baseline justify-end">
                 <span
                     className={[
                         'px-2.5 py-1 rounded-full text-[10px] font-semibold border',
@@ -34,7 +26,7 @@ export default function OverviewPage() {
                 </span>
             </div>
 
-            <div className="flex-1 min-h-0 rounded-3xl border border-slate-800 bg-slate-950/40 overflow-hidden">
+            <div className="flex-1 min-h-0 rounded-3xl bg-slate-950/40 overflow-hidden">
                 <div className="h-full" style={{ contain: 'strict', willChange: 'transform' }}>
                     <Suspense
                         fallback={

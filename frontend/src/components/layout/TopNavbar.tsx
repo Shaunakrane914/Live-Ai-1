@@ -26,7 +26,7 @@ export default function TopNavbar() {
     const toggleChaos = () => setOpen(v => !v)
 
     return (
-        <header className="h-14 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-950/80 backdrop-blur z-20">
+        <header className="h-18 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-950/80 backdrop-blur z-20">
             <div className="flex items-center gap-3">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-xs font-bold text-white">
                     Æ
@@ -41,7 +41,7 @@ export default function TopNavbar() {
                 </div>
             </div>
 
-            <nav className="flex items-center gap-6 text-xs font-medium">
+            <nav className="flex items-center gap-6 text-xs font-medium h-full">
                 {ROUTES.map(route => (
                     <NavLink
                         key={route.to}
@@ -51,7 +51,7 @@ export default function TopNavbar() {
                                 'transition-colors',
                                 'tracking-wide',
                                 'uppercase',
-                                'text-[11px]',
+                                'text-[13px]',
                                 isActive ? 'text-slate-100' : 'text-slate-500 hover:text-slate-200',
                             ].join(' ')
                         }
@@ -62,7 +62,7 @@ export default function TopNavbar() {
             </nav>
 
             <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-[11px]">
+                <div className="flex items-center gap-2 text-[13px]">
                     <span
                         className={[
                             'w-2 h-2 rounded-full',
@@ -78,7 +78,7 @@ export default function TopNavbar() {
                     <button
                         type="button"
                         onClick={toggleChaos}
-                        className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-[11px] font-medium text-slate-300 hover:border-slate-500 hover:bg-slate-900 focus:outline-none"
+                        className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-[13px] font-medium text-slate-300 hover:border-slate-500 hover:bg-slate-900 focus:outline-none"
                     >
                         <span className="text-amber-300">⚡</span>
                         <span>Admin</span>
@@ -94,7 +94,7 @@ export default function TopNavbar() {
                                 className="absolute right-0 mt-2 w-56 rounded-xl border border-slate-800 bg-slate-950/95 backdrop-blur shadow-xl overflow-hidden z-30"
                             >
                                 <div className="px-3 pt-3 pb-2 border-b border-slate-800">
-                                    <p className="text-[11px] font-semibold tracking-wide text-slate-300 uppercase">
+                                    <p className="text-[13px] font-semibold tracking-wide text-slate-300 uppercase">
                                         Chaos Engine
                                     </p>
                                     <p className="text-[10px] text-slate-500 mt-0.5">
@@ -107,7 +107,7 @@ export default function TopNavbar() {
                                             key={btn.event}
                                             type="button"
                                             onClick={() => emit(btn.event)}
-                                            className="w-full text-left px-3 py-1.5 text-[11px] hover:bg-slate-900 flex flex-col"
+                                            className="w-full text-left px-3 py-1.5 text-[13px] hover:bg-slate-900 flex flex-col"
                                         >
                                             <span className="text-slate-100 font-medium">
                                                 {btn.label}
