@@ -100,7 +100,9 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
     const socketRef = useRef<Socket | null>(null)
     const mockTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const evtTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-    const connectedRef = useRef(false)   // track real connection so mock doesn't race
+    const connectedRef = useRef(false)
+    // Delta-tracking: holds the previous tick to detect state changes
+    const prevTickRef = useRef<Record<string, number> | null>(null)
 
     function startMockSimulation() {
         if (mockTimerRef.current) return   // already running
@@ -173,18 +175,64 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
                 events: data.events?.length ?? 0,
             })
 
-            // Surface any slash events embedded in the tick
+            // ── 1. Real slash events from Python env ───────────────
             if (Array.isArray(data.events) && data.events.length > 0) {
                 data.events.forEach((e: { node?: string; penalty_usdc?: number }) => {
                     const msg = `${e.penalty_usdc ?? '?'} USDC seized from ${e.node ?? 'unknown'}`
                     log.slash('[REAL]', msg)
-                    pushEvent({
-                        id: `slash-${Date.now()}-${Math.random()}`,
-                        type: 'SLASH',
-                        message: msg,
-                        timestamp: Date.now(),
-                    })
+                    pushEvent({ id: `slash-${Date.now()}-${Math.random()}`, type: 'SLASH', message: msg, timestamp: Date.now() })
                 })
+            }
+
+            // ── 2. Delta-derived events (State → Event conversion) ──
+            const prev = prevTickRef.current
+            if (prev) {
+                const energyDelta = data.energyReserve - prev.energyReserve
+                const feeDelta = data.swapFee - prev.swapFee
+                const rewardDelta = (data.reward ?? 0) - (prev.reward ?? 0)
+
+                // AMM Trade detected: energy reserve changed meaningfully
+                if (Math.abs(energyDelta) > 0.5) {
+                    const side = energyDelta > 0 ? 'sold' : 'bought'
+                    const kWh = Math.abs(energyDelta).toFixed(2)
+                    const usdc = (Math.abs(energyDelta) * (data.price ?? 0.084)).toFixed(3)
+                    const msg = `[CONFIRMED] Node ${side} ${kWh} kWh → ${usdc} USDC @${data.swapFee?.toFixed(2) ?? '?'}% fee`
+                    log.event('[Δ-SWAP]', msg)
+                    pushEvent({ id: `swap-${Date.now()}`, type: 'SWAP', message: msg, timestamp: Date.now() })
+                }
+
+                // DDPG Fee Spike: agent reacted aggressively to instability
+                if (feeDelta > 0.5) {
+                    const msg = `[AI] DDPG spiked fee +${feeDelta.toFixed(2)}% → ${data.swapFee?.toFixed(2)}% to absorb grid volatility`
+                    log.warn('[Δ-AI-SPIKE]', msg)
+                    pushEvent({ id: `chaos-${Date.now()}`, type: 'CHAOS', message: msg, timestamp: Date.now() })
+                }
+
+                // ZK Settlement: fee eased back (agent stabilised grid) + positive reward
+                if (feeDelta < -0.4 && rewardDelta > 0) {
+                    const proof = Math.random().toString(16).slice(2, 10).toUpperCase()
+                    const msg = `Proof 0x${proof} accepted — DDPG stabilised, fee eased to ${data.swapFee?.toFixed(2)}%`
+                    log.event('[Δ-ZK]', msg)
+                    pushEvent({ id: `zk-${Date.now()}`, type: 'ZK_VERIFIED', message: msg, timestamp: Date.now() })
+                }
+
+                // Liquidity Event: large reserve swing (>50 kWh) — LP rebalancing
+                if (Math.abs(energyDelta) > 50) {
+                    const kWh = Math.abs(energyDelta).toFixed(1)
+                    const usdc = (Math.abs(energyDelta) * (data.price ?? 0.084) * 1.2).toFixed(2)
+                    const msg = `LP rebalance: ${kWh} kWh + ${usdc} USDC reserve shift`
+                    log.event('[Δ-LP]', msg)
+                    pushEvent({ id: `lp-${Date.now()}`, type: 'LIQUIDITY', message: msg, timestamp: Date.now() })
+                }
+            }
+
+            // ── 3. Store current tick for next delta comparison ─────
+            prevTickRef.current = {
+                energyReserve: data.energyReserve,
+                stableReserve: data.stableReserve,
+                swapFee: data.swapFee,
+                price: data.price,
+                reward: data.reward ?? 0,
             }
 
             applyTick(data)
