@@ -119,6 +119,8 @@ class SimState(BaseModel):
     ddpgActive:    bool
     step:          int
     events:        list
+    batterySoc:    float       # aggregate SoC across all 15 nodes (0–100)
+    nodes:         list        # per-node telemetry [{id, current_gen, current_load, battery_soc}]
 
 class ChaosRequest(BaseModel):
     type: str   # "cloud_cover" | "peak_demand" | "malicious_actor" | "delivery_fail"
@@ -128,6 +130,22 @@ class ChaosRequest(BaseModel):
 # SIMULATION LOOP  (runs in background asyncio task)
 # ══════════════════════════════════════════════════════════════════════════════
 def _build_state(info: dict, fee: float, reward: float) -> dict:
+    raw_nodes = info.get("nodes", [])
+    # Aggregate battery SoC across all nodes
+    agg_soc = (
+        sum(n.get("battery_soc", 50.0) for n in raw_nodes) / len(raw_nodes)
+        if raw_nodes else 50.0
+    )
+    # Trim node payload to only the fields the frontend needs
+    nodes_payload = [
+        {
+            "id":           n.get("id", f"node_{i}"),
+            "current_gen":  round(n.get("current_gen", 0.0), 2),
+            "current_load": round(n.get("current_load", 0.0), 2),
+            "battery_soc":  round(n.get("battery_soc", 50.0), 1),
+        }
+        for i, n in enumerate(raw_nodes)
+    ]
     return {
         "timestamp":     int(time.time() * 1000),
         "gridLoad":      round(info["gridLoad"],      2),
@@ -141,6 +159,8 @@ def _build_state(info: dict, fee: float, reward: float) -> dict:
         "ddpgActive":    True,
         "step":          _step_count,
         "events":        info.get("slashEvents", []),
+        "batterySoc":    round(agg_soc, 1),
+        "nodes":         nodes_payload,
     }
 
 

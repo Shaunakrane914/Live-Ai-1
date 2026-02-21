@@ -1,13 +1,52 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ── SEO ──────────────────────────────────────────────────── -->
+  <title>AegisGrid Protocol</title>
+  <meta name="description"
+    content="Self-healing, privacy-preserving decentralised microgrid protocol powered by DDPG reinforcement learning, AMM bonding curves, and zk-SNARKs." />
+  <meta name="theme-color" content="#EEF4FF" />
+
+  <!-- ── Favicon ───────────────────────────────────────────────── -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%234DA3FF'/><text x='50%25' y='54%25' font-size='18' font-weight='800' font-family='system-ui' fill='white' text-anchor='middle' dominant-baseline='middle'>Æ</text></svg>" />
+
+  <!-- ── Google Fonts ───────────────────────────────────────────── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    /* ── Prevent FOUC ─────────────────────────────────────────── */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: #F0F2F5;
+    }
+
+    /* ── Clean professional card baseline ─────────────────────── */
+    .glass-card,
+    .glass-card-strong {
+      background: #FFFFFF !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid #E5E7EB !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>
