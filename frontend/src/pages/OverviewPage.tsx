@@ -4,6 +4,7 @@ import { useGridStore } from '../store/useGridStore'
 import { useSocketEmit } from '../providers/WebSocketProvider'
 import MicrogridCanvas from '../components/three/MicrogridCanvas'
 import GlassCard from '../components/ui/GlassCard'
+import TxFeed from '../components/ui/TxFeed'
 
 const fadeUp = {
     initial: { opacity: 0, y: 14 },
@@ -122,7 +123,7 @@ export default function OverviewPage() {
                 </GlassCard>
 
                 {/* Chaos Engine — delay 0.16 */}
-                <GlassCard delay={0.16} className="rounded-none p-8 flex-1">
+                <GlassCard delay={0.16} className="rounded-none p-8">
                     <p className="section-label mb-4">Chaos Engine</p>
                     <div className="grid grid-cols-2 gap-4">
                         {CHAOS_BTNS.map(btn => (
@@ -136,10 +137,9 @@ export default function OverviewPage() {
                                     background: btn.gradient,
                                     boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
                                     border: '1px solid rgba(255,255,255,0.45)',
-                                    willChange: 'transform',   /* GPU layer — no layout cost */
+                                    willChange: 'transform',
                                 }}
                             >
-                                {/* Inner gloss overlay for glass depth */}
                                 <div className="absolute inset-0 rounded-2xl pointer-events-none"
                                     style={{ background: 'linear-gradient(160deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.04) 60%, transparent 100%)' }}
                                 />
@@ -154,6 +154,11 @@ export default function OverviewPage() {
                             </motion.button>
                         ))}
                     </div>
+                </GlassCard>
+
+                {/* Live Transaction Feed — delay 0.24 */}
+                <GlassCard delay={0.24} className="rounded-none flex-1 min-h-0 overflow-hidden">
+                    <TxFeed />
                 </GlassCard>
             </div>
         </motion.div>
