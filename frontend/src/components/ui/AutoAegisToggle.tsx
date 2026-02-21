@@ -11,7 +11,7 @@ const STEPS = [
     'Reward r_t computed, critic Q updated',
 ]
 
-export default function AutoAegisToggle({ active, onToggle }: { active: boolean; onToggle: () => void }) {
+export default function AutoGridiumToggle({ active, onToggle }: { active: boolean; onToggle: () => void }) {
     const [step, setStep] = useState(0)
 
     useEffect(() => {
@@ -25,7 +25,7 @@ export default function AutoAegisToggle({ active, onToggle }: { active: boolean;
             {/* Toggle row */}
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-[13px] font-semibold text-[#1A1D23]">Auto-Aegis Agent</p>
+                    <p className="text-[13px] font-semibold text-[#1A1D23]">Auto-Gridium Agent</p>
                     <p className="text-[10px] text-[#8B93A4]">DDPG RL policy</p>
                 </div>
                 <button

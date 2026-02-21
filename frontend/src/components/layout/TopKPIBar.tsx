@@ -29,7 +29,7 @@ export default function TopKPIBar() {
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
                     style={{ background: 'linear-gradient(135deg,#3B82F6,#1D4ED8)' }}>Æ</div>
                 <div>
-                    <p className="text-[13px] font-bold text-[#111827] leading-tight">AegisGrid</p>
+                    <p className="text-[13px] font-bold text-[#111827] leading-tight">GridiumGrid</p>
                     <p className="text-[10px] text-[#9CA3AF] leading-tight tracking-wide">Protocol V1</p>
                 </div>
             </div>

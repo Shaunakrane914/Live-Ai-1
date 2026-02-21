@@ -30,12 +30,10 @@ export default function TopNavbar() {
     return (
         <header className="h-18 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-950/80 backdrop-blur z-20">
             <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-xs font-bold text-white">
-                    Æ
-                </div>
+                <img src="/logo.png" alt="Gridium" className="w-8 h-8 rounded-lg object-cover" />
                 <div className="leading-tight">
                     <p className="text-[13px] font-semibold text-slate-100 tracking-tight">
-                        AegisGrid
+                        Gridium
                     </p>
                     <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em]">
                         Protocol v1

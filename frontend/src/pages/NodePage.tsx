@@ -232,7 +232,7 @@ function AgentDecisionMatrix({ nodeGen, nodeLoad, batSoc, price, swapFee }: {
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-5">
-        <p className="text-base font-bold text-slate-200 uppercase tracking-wider">Auto-Aegis Agent</p>
+        <p className="text-base font-bold text-slate-200 uppercase tracking-wider">Auto-Gridium Agent</p>
         <motion.div
           className="px-4 py-2 rounded-full text-sm font-bold"
           style={{ background: stateConfig.bg, color: stateConfig.color }}
@@ -342,11 +342,12 @@ export default function NodePage() {
           </div>
           <div className="mt-6">
             <PageInfo
-              title="Prosumer Node"
+              title="Prosumer Terminal"
               description={[
-                "Each Prosumer Node is an autonomous energy agent that can both produce (solar) and consume (load) electricity.",
-                "The DDPG reinforcement learning agent continuously monitors the node's solar yield, battery state-of-charge, and market price to decide whether to sell surplus energy to the AMM, charge the battery, or buy energy from the grid.",
-                "All trades are ZK-verified on-chain using Groth16 proofs, preserving the node's privacy while ensuring trustless settlement."
+                "What is this?: This is the live dashboard for a single 'Smart House' in our neighborhood. We call it a Prosumer because it both produces solar energy and consumes power.",
+                "The AI Brain: Instead of a human flipping switches, an AI (the Auto-Gridium Agent) runs this house. It constantly checks the battery level, the weather, and the current price of electricity.",
+                "Autonomous Trading: If the house has extra solar power, the AI automatically sells it to the network for a profit. If the house is running low, the AI automatically buys power. It acts like a robotic day-trader for electricity.",
+                "The Privacy Mask: When the house makes a trade, it uses 'Zero-Knowledge' cryptography. This acts like a secret digital mask—it proves the house has real energy to sell, without ever revealing its physical location or private data to the public."
               ]}
             />
           </div>

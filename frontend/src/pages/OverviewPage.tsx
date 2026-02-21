@@ -108,12 +108,7 @@ export default function OverviewPage() {
             transition={{ delay: 2, duration: 0.5 }}
             className="absolute top-4 left-1/2 -translate-x-1/2 z-30"
           >
-            <motion.button
-              onClick={() => navigate('/about')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="relative group"
-            >
+            <div className="relative group">
               {/* Glow effect */}
               <motion.div
                 className="absolute inset-0 rounded-full blur-xl opacity-60"
@@ -127,8 +122,13 @@ export default function OverviewPage() {
                 transition={{ duration: 3, repeat: Infinity }}
               />
               
-              {/* Main banner */}
-              <div className="relative flex items-center gap-4 px-7 py-4 bg-slate-900/90 backdrop-blur-md border border-indigo-500/50 rounded-full shadow-2xl">
+              {/* Main banner button */}
+              <motion.button
+                onClick={() => navigate('/about')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative flex items-center gap-4 px-7 py-4 bg-slate-900/90 backdrop-blur-md border border-indigo-500/50 rounded-full shadow-2xl"
+              >
                 <motion.span 
                   className="text-2xl"
                   animate={{ rotate: [0, 15, -15, 0] }}
@@ -141,7 +141,7 @@ export default function OverviewPage() {
                     Confused?
                   </p>
                   <p className="text-base text-slate-200 font-medium">
-                    Learn how Aegis works →
+                    Learn how Gridium works →
                   </p>
                 </div>
                 <motion.div
@@ -151,19 +151,16 @@ export default function OverviewPage() {
                 >
                   <span className="text-indigo-300 text-sm">›</span>
                 </motion.div>
-              </div>
+              </motion.button>
               
-              {/* Close button */}
+              {/* Close button - now a sibling, not a child */}
               <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowBanner(false)
-                }}
-                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-700 border border-slate-600 text-slate-400 text-xs hover:bg-slate-600 transition-colors flex items-center justify-center"
+                onClick={() => setShowBanner(false)}
+                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-700 border border-slate-600 text-slate-400 text-xs hover:bg-slate-600 transition-colors flex items-center justify-center z-10"
               >
                 ×
               </button>
-            </motion.button>
+            </div>
           </motion.div>
         )}
 

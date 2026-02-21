@@ -78,12 +78,13 @@ export default function ZkTerminalPage() {
                     </p>
                 </div>
                 <div className="mt-0.5">
-                    <PageInfo 
+                    <PageInfo
                         title="Cryptographic Settlement"
                         description={[
-                            "This terminal manages the Groth16 zk-SNARK proof generation for the network.",
-                            "Nodes generate mathematical proofs of their energy surplus without revealing their raw physical data.",
-                            "The blockchain verifies the proof, ensuring trustless market participation while maintaining absolute privacy."
+                            "The Privacy Engine: This page is the live security checkpoint for the entire microgrid. It processes all the 'Zero-Knowledge' math for the network.",
+                            "The Secret Receipt: When a house wants to sell energy, it creates a complex mathematical puzzle. This puzzle proves the house actually has the energy it claims to have, but completely hides the house's physical location and private hardware data.",
+                            "The Blockchain Bouncer: Before any trade is allowed, the central smart contract checks this math puzzle. If the math is perfect, the trade is verified (shown in green).",
+                            "The Penalty Box: You will also see a 'Slash Registry' here. If a hacker or a broken node tries to lie and submit a fake energy proof to steal money, the network instantly catches the bad math, blocks the trade, and records the penalty."
                         ]}
                     />
                 </div>

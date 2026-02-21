@@ -65,6 +65,18 @@ export default function SwapFeeChart() {
                     timeVisible: true,
                     secondsVisible: true,
                     fixLeftEdge: false,
+                    lockVisibleTimeRangeOnResize: true,
+                },
+                handleScroll: {
+                    mouseWheel: false,
+                    pressedMouseMove: false,
+                    horzTouchDrag: false,
+                    vertTouchDrag: false,
+                },
+                handleScale: {
+                    mouseWheel: false,
+                    pinch: false,
+                    axisPressedMouseMove: false,
                 },
                 width: w,
                 height: h,

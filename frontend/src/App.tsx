@@ -41,7 +41,7 @@ function IntroScreen({ onComplete }: { onComplete: () => void }) {
             transition={{ duration: 0.4 }}
             className="text-center"
           >
-            <h1 className="text-7xl font-bold text-white tracking-tight">Cipher Grid</h1>
+            <h1 className="text-7xl font-bold text-white tracking-tight">Gridium</h1>
             <p className="text-blue-400 mt-4 text-lg tracking-[0.3em] uppercase">Autonomous Energy Network</p>
           </motion.div>
         )}

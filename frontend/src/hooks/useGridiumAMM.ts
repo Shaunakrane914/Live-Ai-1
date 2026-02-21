@@ -1,5 +1,5 @@
 /**
- * useAegisAMM — Web3 + zk-SNARK hook for AegisGrid Phase 5
+ * useGridiumAMM — Web3 + zk-SNARK hook for Gridium Phase 5
  * Connects to Hardhat, fetches AMM reserves, and executes zk-proof liquidity adds.
  */
 import { useCallback, useState } from 'react'
@@ -9,7 +9,7 @@ import { BrowserProvider, Contract, JsonRpcProvider, parseUnits } from 'ethers'
 const HARDHAT_RPC = 'http://localhost:8545'
 const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:8000'
 
-// ABI fragments for AegisAMM
+// ABI fragments for GridiumAMM
 const AMM_ABI = [
   'function energyReserve() view returns (uint256)',
   'function stableReserve() view returns (uint256)',
@@ -19,7 +19,7 @@ const AMM_ABI = [
 // Contract address from deployment.json (fallback if not injected)
 const DEFAULT_AMM_ADDRESS = '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
 
-export interface AegisAMMState {
+export interface GridiumAMMState {
   energyReserve: string
   stableReserve: string
   spotPrice: string
@@ -27,8 +27,8 @@ export interface AegisAMMState {
   error: string | null
 }
 
-export interface UseAegisAMMReturn {
-  reserves: AegisAMMState
+export interface UseGridiumAMMReturn {
+  reserves: GridiumAMMState
   fetchReserves: () => Promise<void>
   executeZkSwap: (totalSolar: number, totalLoad: number, stableIn: number, ammAddress?: string) => Promise<{ success: boolean; txHash?: string; error?: string }>
 }
@@ -36,8 +36,8 @@ export interface UseAegisAMMReturn {
 /**
  * Fetch reserves from chain and optionally push to Zustand store.
  */
-export function useAegisAMM(ammAddress: string = DEFAULT_AMM_ADDRESS): UseAegisAMMReturn {
-  const [reserves, setReserves] = useState<AegisAMMState>({
+export function useGridiumAMM(ammAddress: string = DEFAULT_AMM_ADDRESS): UseGridiumAMMReturn {
+  const [reserves, setReserves] = useState<GridiumAMMState>({
     energyReserve: '0',
     stableReserve: '0',
     spotPrice: '0',

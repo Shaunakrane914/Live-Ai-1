@@ -7,13 +7,13 @@
 
 @theme {
     /* Brand palette */
-    --color-aegis-blue: #4DA3FF;
-    --color-aegis-blue-dark: #2979FF;
-    --color-aegis-mint: #00C853;
-    --color-aegis-mint-light: #E8F5E9;
-    --color-aegis-coral: #FF6B6B;
-    --color-aegis-orange: #FF9100;
-    --color-aegis-gold: #FFD600;
+    --color-aGridium-blue: #4DA3FF;
+    --color-aGridium-blue-dark: #2979FF;
+    --color-aGridium-mint: #00C853;
+    --color-aGridium-mint-light: #E8F5E9;
+    --color-aGridium-coral: #FF6B6B;
+    --color-aGridium-orange: #FF9100;
+    --color-aGridium-gold: #FFD600;
 
     /* Light surface */
     --color-surface: rgba(255, 255, 255, 0.65);
@@ -135,12 +135,12 @@ h2 {
 }
 
 .status-dot.online {
-    background: var(--color-aegis-mint);
+    background: var(--color-aGridium-mint);
     box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.18);
 }
 
 .status-dot.mock {
-    background: var(--color-aegis-orange);
+    background: var(--color-aGridium-orange);
     box-shadow: 0 0 0 3px rgba(255, 145, 0, 0.18);
 }
 

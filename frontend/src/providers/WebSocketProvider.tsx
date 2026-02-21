@@ -14,8 +14,8 @@ const EVENT_TYPES: EventType[] = ['SWAP', 'ZK_VERIFIED', 'SLASH', 'CHAOS', 'LIQU
 
 // ── Debug logger (always on so we can see what's happening) ────────
 const log = {
-    info: (...a: unknown[]) => console.log('%c[AegisWS]', 'color:#4DA3FF;font-weight:bold', ...a),
-    warn: (...a: unknown[]) => console.warn('%c[AegisWS]', 'color:#FF9100;font-weight:bold', ...a),
+    info: (...a: unknown[]) => console.log('%c[GridiumWS]', 'color:#4DA3FF;font-weight:bold', ...a),
+    warn: (...a: unknown[]) => console.warn('%c[GridiumWS]', 'color:#FF9100;font-weight:bold', ...a),
     event: (...a: unknown[]) => console.log('%c[EVENT]', 'color:#00C853;font-weight:bold', ...a),
     tick: (...a: unknown[]) => console.debug('%c[TICK]', 'color:#8B93A4;font-weight:bold', ...a),
     slash: (...a: unknown[]) => console.log('%c[SLASH 🔴]', 'color:#FF6B6B;font-weight:bold', ...a),

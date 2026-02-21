@@ -118,7 +118,7 @@ const Scene = memo(function Scene({ orbitRef }: { orbitRef: React.RefObject<Orbi
                     wrapperClass="pointer-events-none"
                 >
                     <div className="pointer-events-none bg-slate-900/80 border border-blue-500/30 text-blue-400 text-xs font-mono px-2 py-1 rounded backdrop-blur-sm whitespace-nowrap">
-                        [ Aegis AMM Liquidity Pool ]
+                        [ Gridium AMM Liquidity Pool ]
                     </div>
                 </Html>
             </group>
