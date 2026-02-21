@@ -25,7 +25,7 @@ function StatCard({ label, value, subtext, color = 'slate' }: {
 }
 
 export default function OverviewPage() {
-  const { connected, nodes, generation, gridLoad, price } = useGridStore()
+  const { nodes, generation, gridLoad, price } = useGridStore()
   const activeNodes = nodes?.length || 15
   const healthyNodes = nodes?.filter(n => n.battery_soc > 20).length || activeNodes
   const healthPercent = Math.round((healthyNodes / activeNodes) * 100)
@@ -47,43 +47,30 @@ export default function OverviewPage() {
         </div>
         
         <div className="flex items-center gap-6">
-          <div className="flex gap-6">
-            <StatCard 
-              label="Nodes" 
-              value={String(activeNodes)} 
-              subtext={`${healthyNodes} healthy`}
-              color="blue"
-            />
-            <StatCard 
-              label="Health" 
-              value={`${healthPercent}%`} 
-              subtext={healthPercent > 90 ? 'Optimal' : 'Degraded'}
-              color={healthPercent > 90 ? 'emerald' : 'amber'}
-            />
-            <StatCard 
-              label="Price" 
-              value={`${price.toFixed(3)}`}
-              subtext="USDC/kWh"
-              color="slate"
-            />
-            <StatCard 
-              label="Flow" 
-              value={`${(generation - gridLoad).toFixed(1)}`}
-              subtext={generation > gridLoad ? 'kW Surplus' : 'kW Deficit'}
-              color={generation > gridLoad ? 'emerald' : 'amber'}
-            />
-          </div>
-          
-          <span
-            className={[
-              'px-2.5 py-1 rounded-full text-[10px] font-semibold border ml-4',
-              connected
-                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
-                : 'border-amber-500/40 bg-amber-500/10 text-amber-300',
-            ].join(' ')}
-          >
-            {connected ? 'Live' : 'Mock'}
-          </span>
+          <StatCard 
+            label="Nodes" 
+            value={String(activeNodes)} 
+            subtext={`${healthyNodes} healthy`}
+            color="blue"
+          />
+          <StatCard 
+            label="Health" 
+            value={`${healthPercent}%`} 
+            subtext={healthPercent > 90 ? 'Optimal' : 'Degraded'}
+            color={healthPercent > 90 ? 'emerald' : 'amber'}
+          />
+          <StatCard 
+            label="Price" 
+            value={`${price.toFixed(3)}`}
+            subtext="USDC/kWh"
+            color="slate"
+          />
+          <StatCard 
+            label="Flow" 
+            value={`${(generation - gridLoad).toFixed(1)}`}
+            subtext={generation > gridLoad ? 'kW Surplus' : 'kW Deficit'}
+            color={generation > gridLoad ? 'emerald' : 'amber'}
+          />
         </div>
       </div>
 
