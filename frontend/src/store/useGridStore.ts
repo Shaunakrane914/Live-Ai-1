@@ -63,11 +63,21 @@ export const useGridStore = create<GridState>((set) => ({
     events: [],
 
     applyTick: (tick) =>
-        set((s) => ({
-            ...s,
-            ...tick,
-            lastTickAt: Date.now(),
-        })),
+        set((s) => {
+            // Destructure to EXCLUDE the Python 'events' field (slash events array)
+            // and any other non-state fields from the raw tick payload.
+            // The 'events' key on a raw tick is the Python slash array — NOT our
+            // Zustand GridEvent[] feed. Spreading it would wipe the feed every tick.
+            const { events: _rawSlash, ...metrics } = tick as typeof tick & { events?: unknown }
+            void _rawSlash   // acknowledged — handled separately in WebSocketProvider
+            return {
+                ...s,
+                ...metrics,
+                // Only update nodes if the tick actually contains node data
+                nodes: (metrics as { nodes?: typeof s.nodes }).nodes ?? s.nodes,
+                lastTickAt: Date.now(),
+            }
+        }),
 
     pushEvent: (event) =>
         set((s) => ({
