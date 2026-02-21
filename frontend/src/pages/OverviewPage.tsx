@@ -38,11 +38,11 @@ export default function OverviewPage() {
       className="h-full flex flex-col"
     >
       {/* Header with Stats */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
+      <div className="mb-4">
+        <div className="mb-3">
           <p className="text-base font-semibold text-slate-200">Microgrid Network</p>
           <p className="text-[11px] text-slate-500">
-            {activeNodes} autonomous nodes • P2P trading • ERC-1155
+            {activeNodes} nodes • P2P trading • ERC-1155
           </p>
         </div>
         
