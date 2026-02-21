@@ -20,14 +20,15 @@ export interface GridNode {
 
 export interface GridState {
     // Live simulation metrics
-    gridLoad: number   // kW
-    generation: number   // kW
-    price: number   // USDC per kWh
-    swapFee: number   // % — RL controlled
+    gridLoad: number        // kW
+    generation: number      // kW
+    price: number           // USDC per kWh
+    swapFee: number         // % — RL controlled
     energyReserve: number   // AMM energy reserve
     stableReserve: number   // AMM stable reserve
-    reward: number   // RL reward scalar
+    reward: number          // RL reward scalar
     gridImbalance: number   // generation - gridLoad
+    batterySoc: number      // aggregate SoC across all 15 nodes (0–100 %)
 
     // Phase 5: real per-node data from Python (15 nodes)
     nodes: GridNode[]
@@ -55,6 +56,7 @@ export const useGridStore = create<GridState>((set) => ({
     stableReserve: 421,
     reward: 0.847,
     gridImbalance: 15.6,
+    batterySoc: 62.4,   // realistic default until first live tick
     nodes: [],
     connected: false,
     lastTickAt: 0,

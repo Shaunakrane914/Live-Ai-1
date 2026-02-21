@@ -13,7 +13,11 @@ const EVENT_TYPES: EventType[] = ['SWAP', 'ZK_VERIFIED', 'SLASH', 'CHAOS', 'LIQU
 // ── Mock helpers ───────────────────────────────────────────────────
 let _mockGeneration = 158.3, _mockPrice = 0.0842, _mockSwapFee = 1.34
 let _mockEnergy = 5000, _mockStable = 421, _mockReward = 0.847
+let _mockBatterySoc = 62.4
 let _eventCounter = 0
+
+// Stable per-node SoC offsets so each node has a plausible unique value
+const NODE_SOC_OFFSETS = Array.from({ length: 15 }, (_, i) => Math.sin(i * 1.1) * 22)
 
 function clamp(v: number, min: number, max: number) { return Math.max(min, Math.min(max, v)) }
 function jitter(base: number, pct = 0.02) { return base + base * (Math.random() * pct * 2 - pct) }
@@ -28,6 +32,17 @@ function generateMockTick() {
     _mockPrice = clamp(_mockStable / _mockEnergy, 0.01, 1)
     _mockEnergy = clamp(_mockEnergy + (Math.random() * 20 - 10), 1000, 9000)
     _mockStable = clamp(_mockStable + (Math.random() * 8 - 4), 100, 2000)
+    _mockBatterySoc = clamp(_mockBatterySoc + (Math.random() * 2 - 1), 15, 98)
+
+    const perGen = _mockGeneration / 15
+    const perLoad = load / 15
+    const nodes = NODE_SOC_OFFSETS.map((offset, i) => ({
+        id: `node_${i}`,
+        current_gen: parseFloat((perGen * (0.7 + Math.sin(i * 2.3) * 0.3)).toFixed(2)),
+        current_load: parseFloat((perLoad * (0.7 + Math.cos(i * 1.7) * 0.3)).toFixed(2)),
+        battery_soc: parseFloat(clamp(_mockBatterySoc + offset, 5, 100).toFixed(1)),
+    }))
+
     return {
         gridLoad: load, generation: _mockGeneration,
         price: parseFloat(_mockPrice.toFixed(4)),
@@ -36,6 +51,8 @@ function generateMockTick() {
         stableReserve: parseFloat(_mockStable.toFixed(1)),
         reward: parseFloat(_mockReward.toFixed(3)),
         gridImbalance: parseFloat(imbalance.toFixed(2)),
+        batterySoc: parseFloat(_mockBatterySoc.toFixed(1)),
+        nodes,
     }
 }
 

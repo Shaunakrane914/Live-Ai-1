@@ -31,33 +31,33 @@ const CHAOS_BTNS = [
 ]
 
 export default function OverviewPage() {
-    const { gridLoad, generation, swapFee, reward, gridImbalance, connected, events } = useGridStore()
+    const { gridLoad, generation, swapFee, reward, gridImbalance, connected } = useGridStore()
     const emit = useSocketEmit()
 
     const imbalanceColor = Math.abs(gridImbalance) > 20 ? '#E65100'
         : gridImbalance >= 0 ? '#2E7D32' : '#C62828'
 
     return (
-        <motion.div {...fadeUp} className="h-full grid grid-cols-[1fr_260px] grid-rows-[1fr_auto] gap-4">
+        <motion.div {...fadeUp} className="h-full grid grid-cols-[1fr_268px] gap-0">
 
             {/* 3D Canvas — delay 0 */}
-            <GlassCard delay={0} hover={false} className="rounded-3xl overflow-hidden flex flex-col">
-                <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b border-[rgba(0,0,0,0.06)]">
+            <GlassCard delay={0} hover={false} className="rounded-none overflow-hidden flex flex-col">
+                <div className="px-6 pt-4 pb-3 flex items-center justify-between border-b border-[#F3F4F6]">
                     <div>
-                        <h1 className="text-[16px] font-bold text-[#1A1D23]">Macro Grid</h1>
-                        <p className="text-[10px] text-[#8B93A4] uppercase tracking-widest mt-0.5">
+                        <p className="text-[15px] font-bold text-[#111827] tracking-tight leading-none">Macro Grid</p>
+                        <p className="text-[10px] text-[#9CA3AF] uppercase tracking-widest mt-1">
                             Live topology · ZK-Secured · DDPG-Stabilised
                         </p>
                     </div>
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold"
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-semibold border"
                         style={connected
-                            ? { background: 'rgba(46,125,50,0.10)', color: '#2E7D32' }
-                            : { background: 'rgba(230,81,0,0.10)', color: '#E65100' }}>
-                        {connected ? '● LIVE' : '● MOCK'}
+                            ? { background: '#F0FDF4', color: '#15803D', borderColor: '#BBF7D0' }
+                            : { background: '#FFFBEB', color: '#B45309', borderColor: '#FDE68A' }}>
+                        {connected ? 'Live' : 'Mock'}
                     </span>
                 </div>
-                {/* Canvas transparent — mesh gradient shows through glass */}
-                <div className="flex-1" style={{ minHeight: 320 }}>
+                {/* Canvas fills remaining height */}
+                <div className="flex-1 min-h-0" style={{ contain: 'strict', willChange: 'transform' }}>
                     <Suspense fallback={<div className="flex h-full items-center justify-center text-[#8B93A4] text-sm">Loading…</div>}>
                         <MicrogridCanvas />
                     </Suspense>
@@ -65,17 +65,17 @@ export default function OverviewPage() {
             </GlassCard>
 
             {/* Right panel */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-0">
 
                 {/* AI Telemetry — delay 0.08 */}
-                <GlassCard delay={0.08} className="rounded-3xl p-5">
+                <GlassCard delay={0.08} className="rounded-none p-8">
                     <div className="flex items-center gap-2 mb-4">
-                        <span className="w-1.5 h-1.5 rounded-full animate-pulse-slow" style={{ background: '#4DA3FF' }} />
-                        <p className="section-label mb-0">AI Telemetry</p>
+                        <div className="w-1.5 h-1.5 rounded-full animate-pulse-slow bg-[#3B82F6]" />
+                        <p className="section-label mb-0 text-[#6B7280]">AI Telemetry</p>
                     </div>
 
                     {/* Two mini-stat cards */}
-                    <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="grid grid-cols-2 gap-4 mb-5">
                         {[
                             {
                                 label: 'Imbalance', value: `${gridImbalance >= 0 ? '+' : ''}${gridImbalance.toFixed(2)}`, unit: 'kW',
@@ -98,7 +98,7 @@ export default function OverviewPage() {
                         ))}
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-3.5">
                         {[
                             { label: 'Generation', value: `${generation.toFixed(1)} kW`, color: '#0277BD' },
                             { label: 'Grid Load', value: `${gridLoad.toFixed(1)} kW`, color: '#1A1D23' },
@@ -111,9 +111,9 @@ export default function OverviewPage() {
                         ))}
                     </div>
 
-                    <div className="mt-3 rounded-2xl p-2.5"
-                        style={{ background: 'rgba(77,163,255,0.06)', border: '1px solid rgba(77,163,255,0.12)' }}>
-                        <p className="text-[10px] font-mono text-[#1565C0]">
+                    <div className="mt-4 rounded-lg p-3"
+                        style={{ background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                        <p className="text-[10px] font-mono text-[#6B7280]">
                             {Math.abs(gridImbalance) > 20
                                 ? `[DDPG] Correcting Δ${Math.abs(gridImbalance).toFixed(1)} kW…`
                                 : '[DDPG] Grid nominal — monitoring'}
@@ -122,49 +122,40 @@ export default function OverviewPage() {
                 </GlassCard>
 
                 {/* Chaos Engine — delay 0.16 */}
-                <GlassCard delay={0.16} className="rounded-3xl p-5 flex-1">
+                <GlassCard delay={0.16} className="rounded-none p-8 flex-1">
                     <p className="section-label mb-4">Chaos Engine</p>
-                    <div className="grid grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-2 gap-4">
                         {CHAOS_BTNS.map(btn => (
                             <motion.button
                                 key={btn.event}
-                                whileHover={{ scale: 1.05, boxShadow: btn.shadow }}
-                                whileTap={{ scale: 0.95 }}
+                                whileHover={{ scale: 1.04, boxShadow: btn.shadow }}
+                                whileTap={{ scale: 0.96 }}
                                 onClick={() => emit(btn.event)}
-                                className="flex flex-col items-start gap-2 p-3.5 rounded-2xl text-left cursor-pointer border-0 outline-none"
-                                style={{ background: btn.gradient, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+                                className="relative flex flex-col items-start gap-3 p-4 rounded-2xl text-left cursor-pointer outline-none overflow-hidden"
+                                style={{
+                                    background: btn.gradient,
+                                    boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
+                                    border: '1px solid rgba(255,255,255,0.45)',
+                                    willChange: 'transform',   /* GPU layer — no layout cost */
+                                }}
                             >
-                                <span className="text-[22px] leading-none animate-float" style={{ display: 'inline-block' }}>
+                                {/* Inner gloss overlay for glass depth */}
+                                <div className="absolute inset-0 rounded-2xl pointer-events-none"
+                                    style={{ background: 'linear-gradient(160deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.04) 60%, transparent 100%)' }}
+                                />
+                                <span className="text-[26px] leading-none animate-float relative z-10"
+                                    style={{ display: 'inline-block' }}>
                                     {btn.icon}
                                 </span>
-                                <div>
-                                    <p className="text-[11px] font-bold" style={{ color: btn.text }}>{btn.label}</p>
-                                    <p className="text-[9px] mt-0.5" style={{ color: `${btn.text}99` }}>{btn.desc}</p>
+                                <div className="relative z-10">
+                                    <p className="text-sm font-bold leading-tight" style={{ color: btn.text }}>{btn.label}</p>
+                                    <p className="text-xs mt-1 font-medium" style={{ color: `${btn.text}99` }}>{btn.desc}</p>
                                 </div>
                             </motion.button>
                         ))}
                     </div>
                 </GlassCard>
             </div>
-
-            {/* Event Ticker — delay 0.22 */}
-            <GlassCard delay={0.22} hover={false} className="col-span-2 rounded-2xl h-9 flex items-center overflow-hidden px-4">
-                <span className="flex-shrink-0 text-[9px] font-bold uppercase tracking-widest text-[#0277BD] mr-4">LIVE ·</span>
-                <div className="overflow-hidden flex-1">
-                    {events.length > 0 ? (
-                        <div className="ticker-content text-[10px] font-mono text-[#4B5263]">
-                            {[...events, ...events].map((e, i) => (
-                                <span key={`${e.id}-${i}`} className="inline-flex items-center gap-1.5">
-                                    <span className={`badge-${e.type} px-1.5 py-0.5 rounded-md font-bold text-[9px]`}>[{e.type}]</span>
-                                    {e.message}<span className="mx-3 opacity-30">·</span>
-                                </span>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-[9px] text-[#8B93A4] font-mono">Awaiting events…</p>
-                    )}
-                </div>
-            </GlassCard>
         </motion.div>
     )
 }

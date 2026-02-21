@@ -5,7 +5,7 @@
 /* ── Tailwind v4 CSS-first config ──────────────────────────────── */
 @import "tailwindcss";
 
-@theme{
+@theme {
     /* Brand palette */
     --color-aegis-blue: #4DA3FF;
     --color-aegis-blue-dark: #2979FF;
@@ -48,61 +48,82 @@ body,
     height: 100%;
     overflow: hidden;
     font-family: var(--font-sans);
+    font-size: 14px;
+    /* base: text-sm instead of browser 16px default */
+    line-height: 1.5;
     color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Mesh gradient background ─────────────────────────────────────── */
+/* ── Clean neutral background ────────────────────────────────── */
 body {
-    background-color: #EEF4FF;
-    background-image:
-        radial-gradient(ellipse 80% 60% at 10% 20%, rgba(183, 214, 255, 0.55) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 90% 10%, rgba(199, 231, 255, 0.45) 0%, transparent 55%),
-        radial-gradient(ellipse 70% 60% at 50% 90%, rgba(218, 244, 218, 0.40) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 50% at 80% 70%, rgba(255, 240, 215, 0.30) 0%, transparent 50%);
+    background-color: #F0F2F5;
 }
 
-/* ── Glassmorphism card utility ───────────────────────────────────── */
+/* ── Card utility ─────────────────────────────────────────────── */
 .glass-card {
-    background: var(--color-surface);
-    backdrop-filter: blur(14px) saturate(180%);
-    -webkit-backdrop-filter: blur(14px) saturate(180%);
-    border: 1px solid var(--color-border);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
-    transition: background 0.25s ease, backdrop-filter 0.25s ease,
-        box-shadow 0.25s ease, border-color 0.25s ease;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .glass-card:hover {
-    background: rgba(255, 255, 255, 0.80);
-    backdrop-filter: blur(20px) saturate(200%);
-    -webkit-backdrop-filter: blur(20px) saturate(200%);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.09), 0 2px 8px rgba(0, 0, 0, 0.05);
-    border-color: rgba(255, 255, 255, 0.65);
+    border-color: #D1D5DB;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07), 0 8px 24px rgba(0, 0, 0, 0.05);
 }
 
+/* Strong variant — sidebar */
 .glass-card-strong {
-    background: var(--color-surface-strong);
-    backdrop-filter: blur(20px) saturate(200%);
-    -webkit-backdrop-filter: blur(20px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
-    transition: background 0.25s ease, backdrop-filter 0.25s ease,
-        box-shadow 0.25s ease, border-color 0.25s ease;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .glass-card-strong:hover {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(28px) saturate(220%);
-    -webkit-backdrop-filter: blur(28px) saturate(220%);
-    box-shadow: 0 16px 56px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-color: #D1D5DB;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07), 0 8px 24px rgba(0, 0, 0, 0.05);
 }
 
 /* ── Typography utilities ─────────────────────────────────────────── */
 .metric-value {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    /* force tabular nums — prevents layout shift at 500ms ticks */
     letter-spacing: -0.01em;
 }
+
+/* Secondary metric / KPI label — text-sm semibold slate uppercase */
+.metric-label {
+    font-size: 0.75rem;
+    /* text-sm relative to 14px base */
+    font-weight: 600;
+    color: #64748B;
+    /* slate-500 */
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+}
+
+/* Page-level heading scale */
+h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+/* text-4xl */
+h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+/* text-xl  */
 
 /* ── Status dot ───────────────────────────────────────────────────── */
 .status-dot {
@@ -271,25 +292,31 @@ body {
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    border-radius: 14px;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background 0.18s, color 0.18s;
-    color: var(--color-text-secondary);
+    transition: background 0.15s, color 0.15s;
+    color: #6B7280;
+    /* gray-500 */
     font-size: 13px;
     font-weight: 500;
+    border-left: 2px solid transparent;
 }
 
 .nav-item:hover {
-    background: rgba(77, 163, 255, 0.08);
-    color: #4DA3FF;
+    background: #F3F4F6;
+    color: #111827;
 }
 
 .nav-item.active {
-    background: rgba(77, 163, 255, 0.12);
-    color: #4DA3FF;
+    background: #EFF6FF;
+    /* blue-50 */
+    color: #1D4ED8;
+    /* blue-700 */
     font-weight: 600;
+    border-left-color: #3B82F6;
+    /* blue-500 */
 }
 
 /* ── Button base ──────────────────────────────────────────────────── */
@@ -337,9 +364,10 @@ body {
 
 /* ── Section label ────────────────────────────────────────────────── */
 .section-label {
-    font-size: 10px;
+    font-size: 11px;
+    /* was 10px — more legible at body scale */
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     color: var(--color-text-muted);
     margin-bottom: 10px;
