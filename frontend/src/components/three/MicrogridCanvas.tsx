@@ -1,5 +1,5 @@
 import { memo, Suspense, useMemo, useRef, useState, useEffect } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Stars, Html } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
@@ -165,18 +165,7 @@ const Scene = memo(function Scene({ orbitRef }: { orbitRef: React.RefObject<Orbi
 // ── Canvas wrapper ─────────────────────────────────────────────────
 export default function MicrogridCanvas() {
     const orbitRef = useRef<OrbitControlsImpl>(null)
-    const [hovering, setHovering] = useState(false)
     const [visible, setVisible] = useState(true)
-
-    // Pause auto-rotate while hovering so the orbit doesn't fight the click
-    const handlePointerOver = () => {
-        setHovering(true)
-        if (orbitRef.current) orbitRef.current.autoRotate = false
-    }
-    const handlePointerOut = () => {
-        setHovering(false)
-        if (orbitRef.current) orbitRef.current.autoRotate = true
-    }
 
     // Pause rendering when tab is hidden
     useEffect(() => {
@@ -200,7 +189,7 @@ export default function MicrogridCanvas() {
             </div>
 
             <div className="absolute bottom-2 right-3 z-10 text-[9px] text-[#8B93A4] opacity-50 pointer-events-none">
-                {hovering ? '🖱 Click to inspect node' : 'Drag · Scroll to zoom · Click node to inspect'}
+                Drag · Scroll to zoom · Click node to inspect
             </div>
 
             <Canvas
@@ -217,8 +206,6 @@ export default function MicrogridCanvas() {
                 flat
                 performance={{ min: 0.5, max: 1 }}
                 frameloop={visible ? "demand" : "never"}
-                onPointerOver={handlePointerOver}
-                onPointerOut={handlePointerOut}
             >
                 <Suspense fallback={null}>
                     <Scene orbitRef={orbitRef} />
