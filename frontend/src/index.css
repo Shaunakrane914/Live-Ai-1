@@ -49,42 +49,42 @@ body,
     overflow: hidden;
     font-family: var(--font-sans);
     font-size: 14px;
-    /* base: text-sm instead of browser 16px default */
     line-height: 1.5;
-    color: var(--color-text-primary);
+    color: #E5E7EB;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Clean neutral background ────────────────────────────────── */
 body {
-    background-color: #F0F2F5;
+    background-color: #020617;
 }
 
 /* ── Card utility ─────────────────────────────────────────────── */
 .glass-card {
-    background: #FFFFFF;
-    border: 1px solid #E5E7EB;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.04);
-    transition: box-shadow 0.18s ease, border-color 0.18s ease;
+    background: rgba(15, 23, 42, 0.88);
+    border: 1px solid #1F2937;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+    transition: box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
 .glass-card:hover {
-    border-color: #D1D5DB;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07), 0 8px 24px rgba(0, 0, 0, 0.05);
+    border-color: #4B5563;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+    background: rgba(15, 23, 42, 0.96);
 }
 
 /* Strong variant — sidebar */
 .glass-card-strong {
-    background: #FFFFFF;
-    border: 1px solid #E5E7EB;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.04);
-    transition: box-shadow 0.18s ease, border-color 0.18s ease;
+    background: rgba(17, 24, 39, 0.92);
+    border: 1px solid #111827;
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+    transition: box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
 .glass-card-strong:hover {
-    border-color: #D1D5DB;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07), 0 8px 24px rgba(0, 0, 0, 0.05);
+    border-color: #4B5563;
+    box-shadow: 0 26px 90px rgba(0, 0, 0, 0.6);
+    background: rgba(15, 23, 42, 0.98);
 }
 
 /* ── Typography utilities ─────────────────────────────────────────── */

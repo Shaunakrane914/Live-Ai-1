@@ -7,9 +7,6 @@ interface AMMCoreProps {
     stableReserve: number
 }
 
-// Pre-allocated scratch for glow pulse
-const _glowColor = new THREE.Color('#3B82F6')
-
 const AMMCore = memo(function AMMCore({ energyReserve, stableReserve }: AMMCoreProps) {
     const outerRef = useRef<THREE.Mesh>(null)
     const innerRef = useRef<THREE.Mesh>(null)

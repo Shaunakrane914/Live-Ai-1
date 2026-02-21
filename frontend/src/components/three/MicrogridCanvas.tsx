@@ -1,6 +1,6 @@
 import { memo, Suspense, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Stars } from '@react-three/drei'
+import { OrbitControls, Stars, Html } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
 import { useGridStore } from '../../store/useGridStore'
@@ -17,7 +17,7 @@ const NODE_POSITIONS: [number, number, number][] = (() => {
         const y = 1 - (i / Math.max(1, NODE_COUNT - 1)) * 2
         const r = Math.sqrt(1 - y * y)
         const theta = phi * i
-        return [Math.cos(theta) * r * 3.5, y * 1.7, Math.sin(theta) * r * 3.5]
+        return [Math.cos(theta) * r * 5.2, y * 2.3, Math.sin(theta) * r * 5.2]
     })
 })()
 
@@ -32,7 +32,7 @@ const CONNECTION_GEO = (() => {
 // ── Static materials — shared across renders ───────────────────────
 const LINE_MAT = new THREE.LineBasicMaterial({ color: '#94A3B8', transparent: true, opacity: 0.18 })
 const FLOOR_MAT = new THREE.MeshBasicMaterial({ color: '#64748B', wireframe: true, transparent: true, opacity: 0.09 })
-const FLOOR_GEO = new THREE.PlaneGeometry(22, 22, 16, 16)
+const FLOOR_GEO = new THREE.PlaneGeometry(32, 32, 20, 20)
 
 
 
@@ -103,22 +103,43 @@ const Scene = memo(function Scene({ orbitRef }: { orbitRef: React.RefObject<Orbi
 
     return (
         <>
-            {/* Scene-level lights only */}
             <ambientLight intensity={1.2} color="#ffffff" />
             <directionalLight position={[4, 7, 4]} intensity={0.4} color="#E0ECFF" castShadow={false} />
 
-            {/* Stars — static, no useFrame rotation */}
             <Stars radius={30} depth={16} count={250} factor={0.7} saturation={0} fade speed={0} />
 
             <GridFloor />
 
-            <AMMCore energyReserve={energyReserve} stableReserve={stableReserve} />
+            <group>
+                <AMMCore energyReserve={energyReserve} stableReserve={stableReserve} />
+                <Html
+                    position={[0, 1.7, 0]}
+                    center
+                    wrapperClass="pointer-events-none"
+                >
+                    <div className="pointer-events-none bg-slate-900/80 border border-blue-500/30 text-blue-400 text-xs font-mono px-2 py-1 rounded backdrop-blur-sm whitespace-nowrap">
+                        [ Aegis AMM Liquidity Pool ]
+                    </div>
+                </Html>
+            </group>
 
-            {/* Static connection lines — shared geo/mat, ONE draw call */}
             <lineSegments geometry={CONNECTION_GEO} material={LINE_MAT} />
 
-            {nodes.map(node => (
-                <ProsumerNode key={node.id} data={node} />
+            {nodes.map((node, index) => (
+                <group key={node.id}>
+                    <ProsumerNode data={node} />
+                    {index === 0 && (
+                        <Html
+                            position={[node.position[0], node.position[1] + 0.9, node.position[2]]}
+                            center
+                            wrapperClass="pointer-events-none"
+                        >
+                            <div className="pointer-events-none bg-slate-900/80 border border-slate-700/50 text-slate-300 text-[10px] font-mono px-2 py-1 rounded backdrop-blur-sm whitespace-nowrap">
+                                [ Autonomous Prosumer ]
+                            </div>
+                        </Html>
+                    )}
+                </group>
             ))}
 
             {activeFlows.map((flow, i) => (
@@ -175,7 +196,7 @@ export default function MicrogridCanvas() {
             </div>
 
             <Canvas
-                camera={{ position: [0, 3.5, 8.5], fov: 52, near: 0.1, far: 80 }}
+                camera={{ position: [0, 4.5, 11], fov: 55, near: 0.1, far: 100 }}
                 gl={{
                     antialias: false,
                     alpha: true,

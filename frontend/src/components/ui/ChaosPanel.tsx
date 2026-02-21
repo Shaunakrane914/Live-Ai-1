@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useSocketEmit } from '../../providers/WebSocketProvider'
+import { useSocketEmit } from '../../providers/SocketContext'
 
 interface ChaosBtnConfig {
     label: string

@@ -1,10 +1,11 @@
 import {
-    createContext, useContext, useEffect, useRef,
+    useEffect, useRef,
     type ReactNode,
 } from 'react'
 import { io, type Socket } from 'socket.io-client'
 import { useGridStore, type EventType, type GridEvent } from '../store/useGridStore'
 import { useOhlcAggregator } from '../hooks/useOhlcAggregator'
+import { SocketContext } from './SocketContext'
 
 // ── Config ─────────────────────────────────────────────────────────
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8000'
@@ -82,17 +83,6 @@ function generateMockEvent(): GridEvent {
     return evt
 }
 
-// ── Context — expose socket emit ───────────────────────────────────
-interface SocketContextValue {
-    emit: (event: string, data?: unknown) => void
-}
-
-const SocketContext = createContext<SocketContextValue>({ emit: () => { } })
-
-export function useSocketEmit() {
-    return useContext(SocketContext).emit
-}
-
 // ── Provider ───────────────────────────────────────────────────────
 interface WebSocketProviderProps { children: ReactNode }
 
@@ -113,8 +103,7 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
         mockTimerRef.current = setInterval(() => {
             const tick = generateMockTick()
             applyTick(tick)
-            // Feed mock ticks into the global OHLC aggregator
-            const { completed, live: _live } = ohlc.push(tick.swapFee)
+            const { completed } = ohlc.push(tick.swapFee)
             if (completed) pushOhlcCandle(completed)
         }, MOCK_INTERVAL)
         evtTimerRef.current = setInterval(() => pushEvent(generateMockEvent()), 2500)

@@ -15,7 +15,7 @@ export default function AutoAegisToggle({ active, onToggle }: { active: boolean;
     const [step, setStep] = useState(0)
 
     useEffect(() => {
-        if (!active) { setStep(0); return }
+        if (!active) return
         const id = setInterval(() => setStep(s => (s + 1) % STEPS.length), 1600)
         return () => clearInterval(id)
     }, [active])
