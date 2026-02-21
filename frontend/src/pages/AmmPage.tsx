@@ -7,6 +7,7 @@ import {
 import { useGridStore } from '../store/useGridStore'
 import { useAegisAMM } from '../hooks/useAegisAMM'
 import GlassCard from '../components/ui/GlassCard'
+import SwapFeeChart from '../components/charts/SwapFeeChart'
 
 const fadeUp = {
     initial: { opacity: 0, y: 14 },
@@ -118,6 +119,11 @@ export default function AmmPage() {
             <div className="flex-1 grid grid-cols-[1fr_320px] gap-5 min-h-0">
 
                 <div className="flex flex-col gap-5">
+
+                    {/* ── OHLC Candlestick Chart — DDPG Swap Fee ────── */}
+                    <div className="rounded-3xl overflow-hidden" style={{ height: '260px', background: '#0F1923', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
+                        <SwapFeeChart />
+                    </div>
 
                     {/* Bonding Curve — delay 0 */}
                     <GlassCard delay={0} className="rounded-3xl p-5 flex-1 flex flex-col">
