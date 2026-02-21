@@ -1,0 +1,93 @@
+Phase 1: The Physics Simulation & Web3 Bridge (Backend)
+Before introducing AI or blockchain, the physical reality of the microgrid must exist in code. This phase constructs the deterministic environment simulating 15 virtual houses (nodes). It mathematically models daily solar generation, the household "duck curve" consumption profile, and local battery storage dynamics. Additionally, it establishes the Web3 connection manager to act as the future decentralized oracle.
++4
+
+Validation & Testing (Phase 1 Checkings):
+
+[ ] Telemetry Output Test: Does the Python script successfully output a continuous JSON stream of total network load and generation for all 15 nodes? 
+
+[ ] Battery State-Machine Test: When solar generation strictly exceeds household load, does the local Battery State of Charge (SoC) increase up to 100%? 
+
+[ ] RPC Connection Test: Can the web3.py library successfully connect to a local Ethereum testnet (e.g., Hardhat/Ganache) and read the current block height?
+
+[ ] Chaos API Test: Do the FastAPI REST endpoints (e.g., Simulate Cloud Cover) correctly alter the mathematical generation variables in real-time? 
++1
+
+Phase 2: The Trustless Settlement Layer (Blockchain)
+This phase builds the incorruptible legal and financial framework of the grid. You will write the Solidity smart contracts leveraging the ERC-1155 multi-token standard to handle both stablecoins and energy tokens efficiently. It also introduces the Constant Product Automated Market Maker (AMM) to govern autonomous pricing without middlemen.
++4
+
+Validation & Testing (Phase 2 Checkings):
+
+[ ] ERC-1155 Batch Test: Can the contract successfully execute a safeBatchTransferFrom to swap energy tokens and stablecoins in a single transaction? 
+
+[ ] Bonding Curve Invariant Test: When energy is bought or sold, does the core mathematical invariant x⋅y=k remain completely constant? 
++2
+
+[ ] Oracle Injection Test: Can a mock Chainlink node securely push the Python physics data into the smart contract? 
++1
+
+[ ] Slashing Execution Test: If the Oracle reports a physical delivery failure, does the slash() function autonomously deduct the exact required collateral from the offending node? 
++1
+
+Phase 3: The Adversarial AI Policy Engine (Machine Learning)
+With the environment and market built, this phase introduces the Deep Deterministic Policy Gradient (DDPG) neural network to act as the Grid Operator. The AI's sole objective is to balance the grid and minimize energy curtailment by dynamically adjusting AMM pricing parameters.
++2
+
+Validation & Testing (Phase 3 Checkings):
+
+[ ] Reward Function Validation: Does the algorithm accurately calculate the reward R 
+t
+​
+  based on the equation R 
+t
+​
+ =(w 
+1
+​
+ ⋅GridBalance)−(w 
+2
+​
+ ⋅EnergyWaste)−(w 
+3
+​
+ ⋅PriceVolatility)? 
+
+[ ] Convergence Test: Over 1,000 simulated daily cycles, does the DDPG agent's loss function converge, resulting in a stable pricing policy?
+
+[ ] Adversarial Defense Test: When a "Malicious Prosumer" agent is introduced to hoard power, does the Operator AI successfully isolate and penalize the node via targeted pricing? 
++1
+
+[ ] Dynamic Action Test: Does the AI output actionable swap fees (e.g., oscillating between 0.1% and 5.0%) that the Python simulation can successfully digest? 
+
+Phase 4: Zero-Knowledge Privacy (Cybersecurity)
+This layer secures the protocol against physical surveillance. You will implement cryptographic circuits (using Circom or SnarkJS) that allow users to prove they possess energy to trade without revealing their total home consumption or physical grid identity.
++1
+
+Validation & Testing (Phase 4 Checkings):
+
+[ ] R1CS Compilation Test: Does the Rank-1 Constraint System equation A⋅s×B⋅s=C⋅s compile into a valid logic circuit without errors? 
+
+[ ] Client-Side Generation Test: Can a local script successfully take a private input (smart meter reading) and a public output (amount to sell) and generate a zk-SNARK proof? 
+
+[ ] On-Chain Verification Test: Does the deployed Solidity smart contract accept valid zk-SNARK hashes and immediately reject altered or invalid hashes? 
+
+[ ] Data Obfuscation Check: After a successful trade is logged on the blockchain testnet, verify that no geographic coordinates, IP addresses, or base load metrics are readable in the public transaction hash. 
++1
+
+Phase 5: "God View" Full-Stack Integration (Frontend)
+The final phase makes the invisible math visible. This involves building the React and Three.js application, visualizing the 3D topology, rendering the bonding curve, and streaming live cryptographic data to the user interface.
++1
+
+Validation & Testing (Phase 5 Checkings):
+
+[ ] WebSocket Streaming Test: Does the React frontend successfully parse the JSON from the Python backend to animate the WebGL particle flow vectors in real-time? 
++1
+
+[ ] Interactive Chaos Test: When the Simulate Cloud Cover button is clicked on the frontend, does the 3D map immediately dim and the DDPG agent respond with a price spike? 
++2
+
+[ ] Web3 Read/Write Test: Can the frontend correctly pull the current Energy Reserves (x) and Settlement Reserves (y) directly from the blockchain to plot on the Interactive Bonding Curve? 
+
+[ ] Cryptographic Terminal Test: Does the live event ledger on Page 4 successfully display the raw, hashed zk-Proof statuses and gas execution logs dynamically? 
++1
