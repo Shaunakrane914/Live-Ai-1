@@ -7,13 +7,13 @@ import ProsumerNode, { type ProsumerNodeData, type NodeBehavior, BEHAVIOR_COLORS
 import AMMCore from './AMMCore'
 import ParticleFlow from './ParticleFlow'
 
-const NODE_COUNT = 12
+const NODE_COUNT = 15  // Match Python physics (was 12)
 
 // ── Golden-ratio node positions — computed once at module level ────
 const NODE_POSITIONS: [number, number, number][] = (() => {
     const phi = Math.PI * (3 - Math.sqrt(5))
     return Array.from({ length: NODE_COUNT }, (_, i) => {
-        const y = 1 - (i / (NODE_COUNT - 1)) * 2
+        const y = 1 - (i / Math.max(1, NODE_COUNT - 1)) * 2
         const r = Math.sqrt(1 - y * y)
         const theta = phi * i
         return [Math.cos(theta) * r * 3.5, y * 1.7, Math.sin(theta) * r * 3.5]
@@ -48,9 +48,27 @@ function GridFloor() {
 
 // ── Scene — React.memo prevents re-render from unrelated store ticks
 const Scene = memo(function Scene() {
-    const { generation, gridLoad, swapFee, energyReserve, stableReserve, events } = useGridStore()
+    const { generation, gridLoad, swapFee, energyReserve, stableReserve, events, nodes: storeNodes } = useGridStore()
 
     const nodes: ProsumerNodeData[] = useMemo(() => {
+        if (storeNodes && storeNodes.length > 0) {
+            return storeNodes.map((n, i) => {
+                const excess = n.current_gen - n.current_load
+                let behavior: NodeBehavior = 'normal'
+                if (excess > 1.2) behavior = 'selling'
+                else if (excess < -1.2) behavior = 'buying'
+                else behavior = 'neutral'
+                const pos = NODE_POSITIONS[i] ?? NODE_POSITIONS[0]
+                return {
+                    id: i,
+                    position: pos,
+                    behavior,
+                    generation: n.current_gen,
+                    consumption: n.current_load,
+                    batterySoc: n.battery_soc / 100,
+                }
+            })
+        }
         const perGen = generation / NODE_COUNT
         const perLoad = gridLoad / NODE_COUNT
         return NODE_POSITIONS.map((pos, i) => {
@@ -68,8 +86,7 @@ const Scene = memo(function Scene() {
                 batterySoc: 0.3 + (Math.sin(i * 1.1) * 0.5 + 0.5) * 0.7,
             }
         })
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [generation, gridLoad, swapFee])
+    }, [generation, gridLoad, swapFee, storeNodes])
 
     const activeFlows = useMemo(() =>
         events

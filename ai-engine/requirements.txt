@@ -16,3 +16,6 @@ pydantic>=2.6.0
 
 # Utilities
 python-dotenv>=1.0.0
+
+# Pulse check (watch_tick.py)
+python-socketio[asyncio_client]>=5.0.0

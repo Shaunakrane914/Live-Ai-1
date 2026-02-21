@@ -2,14 +2,20 @@
 AegisGrid AI Engine — FastAPI Server (Port 8001)
 Wraps the physics simulation and exposes HTTP endpoints consumed
 by the Node.js gateway every 500 ms.
+
+Phase 3 Final: Live DDPG Actor inference — trained brain controls AMM fee each tick.
 """
 
+import os
+import numpy as np
+import torch
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 
-from physics_oracle import AegisGridPhysics, OracleBridge
+from physics_oracle import AegisGridPhysics, OracleBridge, AegisGridEnv
+from ddpg_agent import Actor, DEVICE
 
 # ── App Setup ────────────────────────────────────────────────────────
 app = FastAPI(title="AegisGrid AI Engine", version="1.0.0")
@@ -27,6 +33,30 @@ oracle = OracleBridge()          # Web3 bridge (graceful no-op if Hardhat offlin
 
 # Persistent AMM reserves carried between ticks
 _amm = {"energyReserve": 5000.0, "stableReserve": 421.0, "swapFee": 1.34}
+
+# ── Phase 3: Trained DDPG Actor (live inference) ────────────────────
+# State norm constants must match AegisGridEnv so Actor sees same input distribution
+_IMBALANCE_SCALE = AegisGridEnv.IMBALANCE_SCALE   # ~120 kW
+_SOC_MAX         = AegisGridEnv.SOC_MAX           # 100.0
+_PRICE_MAX       = AegisGridEnv.PRICE_MAX         # 2.0
+
+_actor = None
+
+def _load_actor():
+    """Load trained Actor weights; graceful no-op if file missing."""
+    global _actor
+    if _actor is not None:
+        return
+    weights_path = os.path.join(os.path.dirname(__file__), "aegis_actor_weights.pth")
+    if not os.path.exists(weights_path):
+        print("[WARN] aegis_actor_weights.pth not found. Using fallback fee (1.34%).")
+        return
+    _actor = Actor(state_dim=3, action_dim=1).to(DEVICE)
+    _actor.load_state_dict(torch.load(weights_path, map_location=DEVICE, weights_only=True))
+    _actor.eval()
+    print("✅ DDPG Actor loaded from aegis_actor_weights.pth (live fee control enabled).")
+
+_load_actor()
 
 
 # ── Request Schemas ─────────────────────────────────────────────────
@@ -49,6 +79,7 @@ def tick():
     """
     Advance simulation by one 30-min step and return the current grid state.
     The Node.js gateway calls this every 500ms (time-compressed simulation).
+    Phase 3: AI chooses swap fee from current state; we push it on-chain and use it next tick.
     """
     state = physics.step(
         swap_fee=_amm["swapFee"],
@@ -59,11 +90,35 @@ def tick():
     _amm["energyReserve"] = state["energyReserve"]
     _amm["stableReserve"] = state["stableReserve"]
 
+    # ── Phase 3: Live AI fee decision ───────────────────────────────
+    net_imbalance = state["gridImbalance"]
+    nodes = state.get("nodes", [])
+    aggregate_soc = float(np.mean([n["battery_soc"] for n in nodes])) if nodes else 50.0
+    spot_price = state["price"]
+
+    # Normalise state same as training (AegisGridEnv._build_state)
+    s_imbalance = np.clip(net_imbalance / _IMBALANCE_SCALE, -1.0, 1.0)
+    s_soc = aggregate_soc / _SOC_MAX
+    s_price = np.clip(spot_price / _PRICE_MAX, 0.0, 1.0)
+    state_vec = np.array([s_imbalance, s_soc, s_price], dtype=np.float32)
+
+    if _actor is not None:
+        with torch.no_grad():
+            state_tensor = torch.from_numpy(state_vec).unsqueeze(0).to(DEVICE)
+            action = _actor(state_tensor)
+            action_output = float(action.cpu().item())
+        new_fee_bps = max(10, min(1000, int(action_output * 1000)))
+        _amm["swapFee"] = new_fee_bps / 100.0
+        state["swapFee"] = round(_amm["swapFee"], 3)
+        print(f"[AI] fee → {new_fee_bps} bps ({_amm['swapFee']:.2f}%)")
+    else:
+        state["swapFee"] = round(_amm["swapFee"], 3)
+
     # Let oracle log telemetry (non-blocking, no Hardhat required)
     oracle.push_telemetry(state)
 
-    # Strip internal node list to keep payload small for the frontend
-    state.pop("nodes", None)
+    # Keep nodes for Phase 5 3D canvas (real per-node data)
+    # state.pop("nodes", None)  # removed — frontend needs nodes for MicrogridCanvas
     return state
 
 

@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./EnergyToken.sol";
+import "./IEnergyProofVerifier.sol";
 
 /**
  * @title  AegisAMM
@@ -17,7 +18,8 @@ import "./EnergyToken.sol";
  * └─────────────────────────────────────────────────────────────────┘
  *
  * Key Functions:
- *   addLiquidity()          → Seed the pool with energy + stable
+ *   addLiquidity()             → Seed the pool with energy + stable (no proof)
+ *   addLiquidityWithProof()   → Add energy + stable with zk-SNARK proof (Phase 4 privacy)
  *   swapStableForEnergy()  → Primary trade: pay USDC, receive kWh
  *   swapEnergyForStable()  → Reverse trade: sell kWh, receive USDC
  *   updateSwapFee()        → Called by Python DDPG agent (RL_OPERATOR_ROLE)
@@ -44,6 +46,7 @@ contract AegisAMM is AccessControl, ReentrancyGuard {
 
     // ── State ─────────────────────────────────────────────────────────
     EnergyToken public immutable token;
+    address public immutable zkVerifier; // Phase 4: address(0) = proof path disabled
 
     uint256 public energyReserve;   // x  (kWh token units)
     uint256 public stableReserve;   // y  (stablecoin units)
@@ -91,10 +94,11 @@ contract AegisAMM is AccessControl, ReentrancyGuard {
 
     // ── Constructor ───────────────────────────────────────────────────
     /**
-     * @param tokenAddress  Deployed EnergyToken contract address
-     * @param initialFeeBPS Starting swap fee from Python config (e.g. 134 = 1.34%)
+     * @param tokenAddress   Deployed EnergyToken contract address
+     * @param initialFeeBPS  Starting swap fee from Python config (e.g. 134 = 1.34%)
+     * @param verifierAddress Phase 4 zk-SNARK verifier; pass address(0) to disable addLiquidityWithProof
      */
-    constructor(address tokenAddress, uint256 initialFeeBPS) {
+    constructor(address tokenAddress, uint256 initialFeeBPS, address verifierAddress) {
         require(tokenAddress != address(0), "AegisAMM: zero token address");
         require(
             initialFeeBPS >= MIN_SWAP_FEE_BPS && initialFeeBPS <= MAX_SWAP_FEE_BPS,
@@ -102,6 +106,7 @@ contract AegisAMM is AccessControl, ReentrancyGuard {
         );
         token = EnergyToken(tokenAddress);
         swapFeeBPS = initialFeeBPS;
+        zkVerifier = verifierAddress;
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(RL_OPERATOR_ROLE, msg.sender);  // DDPG bridge
@@ -153,6 +158,60 @@ contract AegisAMM is AccessControl, ReentrancyGuard {
         lpShares[msg.sender]  += shares;
 
         emit LiquidityAdded(msg.sender, energyIn, stableIn, shares);
+    }
+
+    /**
+     * @notice Add liquidity with zk-SNARK proof (Phase 4 privacy).
+     *         Proves the prosumer has at least `amountToSell` excess energy
+     *         (amount_to_sell = total_solar - total_load) without revealing solar/load.
+     * @param amountToSell Energy (kWh) to add — must match the circuit's public output
+     * @param stableIn     Stablecoin to add
+     * @param proofA       Groth16 proof point A (uint256[2])
+     * @param proofB       Groth16 proof point B (uint256[2][2])
+     * @param proofC       Groth16 proof point C (uint256[2])
+     */
+    function addLiquidityWithProof(
+        uint256 amountToSell,
+        uint256 stableIn,
+        uint256[2] calldata proofA,
+        uint256[2][2] calldata proofB,
+        uint256[2] calldata proofC
+    ) external nonReentrant returns (uint256 shares) {
+        require(zkVerifier != address(0), "AegisAMM: zk verifier not set");
+        require(amountToSell > 0 && stableIn > 0, "AegisAMM: zero liquidity");
+
+        uint256[1] memory pubSignals;
+        pubSignals[0] = amountToSell;
+        require(
+            IEnergyProofVerifier(zkVerifier).verifyProof(proofA, proofB, proofC, pubSignals),
+            "AegisAMM: invalid zk proof"
+        );
+
+        // Same liquidity logic as addLiquidity(amountToSell, stableIn)
+        uint256[] memory ids     = new uint256[](2);
+        uint256[] memory amounts = new uint256[](2);
+        ids[0] = ENERGY_TOKEN_ID; amounts[0] = amountToSell;
+        ids[1] = STABLE_TOKEN_ID; amounts[1] = stableIn;
+        token.safeBatchTransferFrom(msg.sender, address(this), ids, amounts, "");
+
+        if (totalLPShares == 0) {
+            shares = _sqrt(amountToSell * stableIn);
+        } else {
+            uint256 sharesByEnergy = (amountToSell * totalLPShares) / energyReserve;
+            uint256 sharesByStable = (stableIn * totalLPShares) / stableReserve;
+            shares = sharesByEnergy < sharesByStable ? sharesByEnergy : sharesByStable;
+        }
+
+        require(shares > 0, "AegisAMM: zero LP shares");
+
+        energyReserve += amountToSell;
+        stableReserve += stableIn;
+        k = energyReserve * stableReserve;
+
+        totalLPShares         += shares;
+        lpShares[msg.sender] += shares;
+
+        emit LiquidityAdded(msg.sender, amountToSell, stableIn, shares);
     }
 
     /**

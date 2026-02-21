@@ -22,16 +22,22 @@ async function main() {
     const tokenAddress = await energyToken.getAddress();
     console.log(`\n✅ [ASSET LAYER]  EnergyToken deployed at: ${tokenAddress}`);
 
-    // ── 3. Deploy the Market Layer (AMM) ─────────────────────────────
-    // AegisAMM constructor: (address tokenAddress, uint256 initialFeeBPS)
-    // Starting fee = 134 bps = 1.34% (matches Python physics default)
+    // ── 3. Deploy Phase 4 zk-SNARK Verifier (mock until circuits/build.sh is run)
+    const EnergyProofVerifier = await ethers.getContractFactory("EnergyProofVerifier");
+    const verifier = await EnergyProofVerifier.deploy();
+    await verifier.waitForDeployment();
+    const verifierAddress = await verifier.getAddress();
+    console.log(`✅ [ZK LAYER]    EnergyProofVerifier at:  ${verifierAddress}`);
+
+    // ── 4. Deploy the Market Layer (AMM) ─────────────────────────────
+    // AegisAMM constructor: (tokenAddress, initialFeeBPS, zkVerifierAddress)
     const AegisAMM = await ethers.getContractFactory("AegisAMM");
-    const aegisAMM = await AegisAMM.deploy(tokenAddress, 134);
+    const aegisAMM = await AegisAMM.deploy(tokenAddress, 134, verifierAddress);
     await aegisAMM.waitForDeployment();
     const ammAddress = await aegisAMM.getAddress();
     console.log(`✅ [MARKET LAYER] AegisAMM deployed at:    ${ammAddress}`);
 
-    // ── 4. Grant Oracle roles to the Python AI wallet ─────────────────
+    // ── 5. Grant Oracle roles to the Python AI wallet ─────────────────
     // EnergyToken: give oracle MINTER_ROLE (to mint LP shares) + ORACLE_ROLE
     const MINTER_ROLE = ethers.id("MINTER_ROLE");
     const ORACLE_ROLE = ethers.id("ORACLE_ROLE");
@@ -50,7 +56,7 @@ async function main() {
     console.log(`   • AegisAMM.RL_OPERATOR_ROLE  (DDPG fee updates)`);
     console.log(`   • AegisAMM.ORACLE_ROLE       (slashing)`);
 
-    // ── 5. Seed the AMM with initial liquidity from the deployer ──────
+    // ── 6. Seed the AMM with initial liquidity from the deployer ──────
     // Mint tokens to deployer first, then add to pool
     const ENERGY_ID = 1;
     const STABLE_ID = 0;
@@ -76,7 +82,7 @@ async function main() {
     console.log(`   k          = ${k.toString()}`);
     console.log(`   spot price = ${(Number(y) / Number(x)).toFixed(6)} USDC/kWh`);
 
-    // ── 6. Print deployment summary ───────────────────────────────────
+    // ── 7. Print deployment summary ───────────────────────────────────
     console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║  AEGISGRID PHASE 2 — DEPLOYMENT COMPLETE                     ║
@@ -91,7 +97,7 @@ async function main() {
 ╚══════════════════════════════════════════════════════════════╝
 `);
 
-    // ── 7. Write deployment info to JSON for Python to consume ────────
+    // ── 8. Write deployment info to JSON for Python to consume ────────
     const fs = require("fs");
     const deploymentInfo = {
         network: "localhost",
@@ -99,6 +105,7 @@ async function main() {
         deployedAt: new Date().toISOString(),
         contracts: {
             EnergyToken: tokenAddress,
+            EnergyProofVerifier: verifierAddress,
             AegisAMM: ammAddress,
         },
         wallets: {
