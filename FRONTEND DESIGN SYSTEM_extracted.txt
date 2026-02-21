@@ -1,0 +1,172 @@
+🎨 FRONTEND DESIGN SYSTEM
+1️⃣ Design Philosophy
+Blend:
+Bloomberg Terminal seriousness
+SCADA control system realism
+Web3 DEX minimalism
+Clean fintech dashboard hierarchy
+Design Document
+🎨 Visual Identity
+Color System
+Primary Dark Mode (Default)
+Background: #0F1115
+Card Surface: #171A21
+Accent Blue: #4DA3FF
+Success Green: #00E676
+Warning Orange: #FF9100
+Error Red: #FF3D00
+Text Primary: #E6EDF3
+Text Secondary: #9DA7B3
+Light mode optional (inspired by finance UI doc)
+Design Document
+Typography
+Font: Inter / Satoshi / SF Pro
+Hierarchy:
+H1: 28px Bold
+H2: 20px Semi-bold
+Metric: 24px Mono
+Caption: 12px Uppercase
+🏗 FRONTEND ARCHITECTURE
+Routing Structure
+/overview/amm/node/:id/zk-terminal
+📊 PAGE 1 — MACRO GRID OVERVIEW
+Purpose: Prove system complexity instantly
+Website
+Layout Structure
+-------------------------------------------------| Top KPI Bar                                  |-------------------------------------------------| Left AI Panel | 3D Grid Canvas | Chaos Panel |-------------------------------------------------| Blockchain Event Ticker                      |-------------------------------------------------
+Components
+🔹 Top KPI Bar
+Displays:
+Total Grid Load
+Total Generation
+Current Energy Price
+Swap Fee (RL Controlled)
+Liquidity Depth (x & y)
+Privacy Status
+AI Status
+Updates every 500ms via WebSocket.
+🔹 3D Microgrid Canvas
+Tech: React Three Fiber
+15–20 Nodes (instanced mesh)
+Central AMM core
+Particle flow (kWh transfers)
+Node colors:
+Green → Selling
+Red → Buying
+Grey → Neutral
+Orange → Malicious
+This is your “wow” element.
+🔹 AI Telemetry Panel
+Shows:
+Grid Imbalance Graph
+RL Reward Value
+Swap Fee Dial
+Agent Action Log
+Example:
+[DDPG] Grid imbalance detected.[DDPG] Increasing swap fee +1.3%.
+This proves intelligence
+Analysis
+🔹 Chaos Control Panel
+Buttons:
+Simulate Cloud Cover
+Trigger Peak Demand
+Inject Malicious Actor
+Simulate Delivery Failure
+Each modifies Python environment.
+🔹 Footer Ticker
+Scrolling raw blockchain events:
+[SWAP] 5 kWh executed[ZK VERIFIED] Proof accepted[SLASH] 50 USDC seized
+📈 PAGE 2 — AMM TRADING FLOOR
+Purpose: Prove Web3 + bonding curve math
+Maths
+Layout
+-------------------------------------------------| Bonding Curve Visualizer                     |-------------------------------------------------| Liquidity Stats | Swap Panel | AI Fee Panel  |-------------------------------------------------| ZK Trade Ledger                              |-------------------------------------------------
+🔹 Bonding Curve Visualizer
+Live chart of:
+x · y = k
+Marker slides when trades occur.
+This visually explains pricing.
+🔹 Liquidity Stats
+TVL
+Energy Reserve (x)
+Stable Reserve (y)
+Spot Price
+LP Yield
+🔹 Swap Interface
+Pay: [10 USDC]Receive: [8.4 kWh]
+Slippage ToleranceExecute button
+Uses Ethers.js.
+🔹 AI Dynamic Fee Controller
+Dial showing swap fee range 0.1%–5%.
+Displays RL justification.
+🔹 ZK Trade Ledger
+Columns:
+Time | zk Hash | kWh | USDC | Status
+All anonymized.
+🏠 PAGE 3 — PROSUMER NODE VIEW
+Purpose: Human usability
+Page 3
+Layout
+-------------------------------------------------| Telemetry Gauges | Wallet Panel              |-------------------------------------------------| Auto-Aegis AI Panel                          |-------------------------------------------------| Local zk-Proof Terminal                      |-------------------------------------------------
+🔹 Telemetry Gauges
+Solar Yield
+Consumption
+Battery SoC
+Circular animated gauges.
+🔹 Auto-Aegis Toggle
+Master switch.
+When enabled:
+AI auto trades
+Generates zk proof
+Executes trade
+Shows action log.
+🔹 Wallet Panel
+Stablecoin Balance
+LP Tokens
+Collateral Locked
+Net Profit vs Utility
+🔹 zk Proof Terminal
+Visual sequence:
+Generating Witness...Compiling R1CS...Proof Hash: 0x89A...Submitted to AMM...
+Proves privacy engine.
+🔐 PAGE 4 — ZERO-KNOWLEDGE TERMINAL
+Purpose: Hardcore backend credibility
+Page 4
+Layout
+-------------------------------------------------| Global Cryptographic Ledger                  |-------------------------------------------------| zk Engine | Slashing Console                 |-------------------------------------------------| Gas Optimization Tracker                     |-------------------------------------------------
+🔹 Global Ledger
+Block | Tx Hash | Operation | ZK Status
+Terminal style.
+🔹 zk Engine Visualizer
+Shows:
+Prover → R1CS → Verifier
+Animated pipeline.
+🔹 Slashing Console
+Logs:
+Oracle reports failure.Executing slash().Collateral redistributed.
+🔹 Gas Optimization Tracker
+Compares:
+ERC-20 Cost vs ERC-1155 Batch Cost
+Blockchain
+Shows % savings.
+🧩 COMPONENT TREE STRUCTURE
+App ├─ Layout │   ├─ Sidebar │   ├─ Header │   └─ WebSocketProvider ├─ OverviewPage ├─ AmmPage ├─ NodePage └─ ZkTerminalPage
+⚡ REAL-TIME DATA FLOW
+Python RL → Node.js → WebSocket → React StateSmart Contract → Node.js Listener → WebSocket → React
+State stored in global context.
+🎯 UX ENHANCEMENTS
+From finance dashboard best practices
+Design Document
+:
+Clean whitespace
+Consistent card system
+Smooth hover states
+Animated microinteractions
+Clear metric hierarchy
+Dark/light toggle
+Responsive layout
+🏆 WHY THIS FRONTEND WINS
+It visually proves:
+✔ Grid physics✔ AI decision making✔ AMM math✔ Web3 settlement✔ Privacy enforcement✔ Economic viability
+Judges will not see a “project.”
+They will see an institutional protocol simulation platform.
