@@ -5,11 +5,14 @@ import OverviewPage from './pages/OverviewPage'
 import AmmPage from './pages/AmmPage'
 import NodePage from './pages/NodePage'
 import ZkTerminalPage from './pages/ZkTerminalPage'
+import { WelcomeModal } from './components/ui/WelcomeModal'
 import './index.css'
 
 function App() {
   return (
     <BrowserRouter>
+      {/* Welcome splash — z-[100] sits above canvas, sidebar, everything */}
+      <WelcomeModal />
       {/* WebSocketProvider wraps everything so all pages share live state */}
       <WebSocketProvider>
         <DashboardLayout>
