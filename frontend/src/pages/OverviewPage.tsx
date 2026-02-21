@@ -4,7 +4,6 @@ import { useGridStore } from '../store/useGridStore'
 import { useSocketEmit } from '../providers/WebSocketProvider'
 import MicrogridCanvas from '../components/three/MicrogridCanvas'
 import GlassCard from '../components/ui/GlassCard'
-import TxFeed from '../components/ui/TxFeed'
 
 const fadeUp = {
     initial: { opacity: 0, y: 14 },
@@ -123,7 +122,7 @@ export default function OverviewPage() {
                 </GlassCard>
 
                 {/* Chaos Engine — delay 0.16 */}
-                <GlassCard delay={0.16} className="rounded-none p-8">
+                <GlassCard delay={0.16} className="rounded-none p-8 flex-1">
                     <p className="section-label mb-4">Chaos Engine</p>
                     <div className="grid grid-cols-2 gap-4">
                         {CHAOS_BTNS.map(btn => (
@@ -154,11 +153,6 @@ export default function OverviewPage() {
                             </motion.button>
                         ))}
                     </div>
-                </GlassCard>
-
-                {/* Live Transaction Feed — delay 0.24 */}
-                <GlassCard delay={0.24} className="rounded-none flex-1 min-h-0 overflow-hidden">
-                    <TxFeed />
                 </GlassCard>
             </div>
         </motion.div>
