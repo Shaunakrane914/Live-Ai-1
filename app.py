@@ -134,7 +134,7 @@ def start_services(prod: bool = False) -> list[subprocess.Popen]:
         {
             "name": "AI Engine",
             "cmd":  [python, "-m", "uvicorn", "main:app",
-                     "--host", "0.0.0.0", "--port", "8001", "--reload"],
+                     "--host", "0.0.0.0", "--port", "8001"] + (["--reload"] if not prod else []),
             "cwd":  AI_DIR,
         },
         {
