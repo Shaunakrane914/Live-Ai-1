@@ -1,9 +1,7 @@
-# Gridium AI Engine — Python Dependencies
-# Python 3.11+
-# Install: pip install -r requirements.txt
+# Force CPU-only PyTorch to prevent massive NVIDIA package downloads
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
 
-# ── Core ML ──────────────────────────────────────────────────────────────
-torch>=2.2.0
 numpy>=1.26.0
 scipy>=1.12.0
 
@@ -52,7 +50,6 @@ py_ecc>=6.0.0
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
 pytest-cov>=4.1.0
-httpx>=0.27.0
 
 # ── Type Checking ─────────────────────────────────────────────────────────
 mypy>=1.8.0

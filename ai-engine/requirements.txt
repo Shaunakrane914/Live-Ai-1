@@ -1,9 +1,7 @@
-# AegisGrid AI Engine — Python Dependencies
-# Python 3.11+
-# Install: pip install -r requirements.txt
+# Force CPU-only PyTorch to prevent massive NVIDIA package downloads
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
 
-# ── Core ML ──────────────────────────────────────────
-torch>=2.2.0
 numpy>=1.26.0
 
 # ── Gymnasium RL environment ──────────────────────────
