@@ -95,11 +95,25 @@ def kill_port(port: int):
 
 
 def check_deps():
-    """Warn if node_modules are missing."""
+    """Auto-install node_modules if missing."""
+    npm = shutil.which("npm") or "npm"
     for label, path in [("Gateway", BACKEND_DIR), ("Frontend", FRONTEND_DIR)]:
         nm = os.path.join(path, "node_modules")
         if not os.path.isdir(nm):
-            print(f"  ⚠  {label}: node_modules not found — run `npm install` in {path}")
+            print(f"  📦  {label}: node_modules not found — running npm install in {path} …")
+            try:
+                result = subprocess.run(
+                    [npm, "install", "--prefer-offline"],
+                    cwd=path,
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+                print(f"  ✅  {label}: npm install complete")
+            except subprocess.CalledProcessError as e:
+                print(f"  ❌  {label}: npm install failed:\n{e.stderr}")
+        else:
+            print(f"  ✅  {label}: node_modules OK")
 
     if not shutil.which("node"):
         print("  ⚠  node not found in PATH — Gateway and Frontend will fail")
@@ -155,7 +169,7 @@ def start_services(prod: bool = False) -> list[subprocess.Popen]:
 def banner(prod: bool):
     print()
     print(f"{BOLD}{'═'*52}{RESET}")
-    print(f"{BOLD}   AegisGrid — One-Click Launcher{RESET}")
+    print(f"{BOLD}   Gridium — One-Click Launcher{RESET}")
     print(f"{'═'*52}")
     print(f"   AI Engine  →  http://localhost:{BOLD}8001{RESET}  (FastAPI)")
     print(f"   Gateway    →  http://localhost:{BOLD}8000{RESET}  (Socket.io)")
