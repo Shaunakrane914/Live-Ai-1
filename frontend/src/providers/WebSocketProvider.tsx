@@ -8,7 +8,7 @@ import { useOhlcAggregator } from '../hooks/useOhlcAggregator'
 import { SocketContext } from './SocketContext'
 
 // ── Config ─────────────────────────────────────────────────────────
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8000'
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8000' : window.location.origin)
 const MOCK_INTERVAL = 500
 const EVENT_TYPES: EventType[] = ['SWAP', 'ZK_VERIFIED', 'SLASH', 'CHAOS', 'LIQUIDITY']
 

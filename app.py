@@ -145,6 +145,7 @@ def start_services(prod: bool = False) -> list[subprocess.Popen]:
             "name": "Gateway",
             "cmd":  [node, "index.js"],
             "cwd":  BACKEND_DIR,
+            "env":  { **os.environ, "PORT": str(os.environ.get("PORT", "8000")) }
         },
     ]
 
@@ -161,6 +162,7 @@ def start_services(prod: bool = False) -> list[subprocess.Popen]:
             p = subprocess.Popen(
                 svc["cmd"],
                 cwd=svc["cwd"],
+                env=svc.get("env", os.environ),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 # Windows: don't open a new console window
@@ -204,10 +206,11 @@ def main():
     banner(prod)
 
     # Kill anything already on those ports so we don't hit EADDRINUSE
-    ports_to_clear = [8001, 8000] + ([] if prod else [5173])
-    for p in ports_to_clear:
-        kill_port(p)
-        time.sleep(0.1)
+    if not is_render:
+        ports_to_clear = [8001, 8000] + ([] if prod else [5173])
+        for p in ports_to_clear:
+            kill_port(p)
+            time.sleep(0.1)
 
     procs = start_services(prod=prod)
 

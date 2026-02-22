@@ -7,7 +7,7 @@ import { BrowserProvider, Contract, JsonRpcProvider, parseUnits } from 'ethers'
 
 // ── Config ─────────────────────────────────────────────────────────
 const HARDHAT_RPC = 'http://localhost:8545'
-const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:8000'
+const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8000' : window.location.origin)
 
 // ABI fragments for GridiumAMM
 const AMM_ABI = [

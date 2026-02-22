@@ -17,7 +17,7 @@ const cors = require('cors')
 const axios = require('axios')
 
 // ── Config ──────────────────────────────────────────────────────────
-const PORT = 8000
+const PORT = process.env.PORT || 8000
 const AI_ENGINE_URL = 'http://localhost:8001'
 const TICK_INTERVAL_MS = 500    // match frontend MOCK_INTERVAL
 const EVENT_INTERVAL_MS = 2500  // random grid events
