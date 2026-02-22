@@ -27,11 +27,21 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+// ── Static frontend (production) ────────────────────────────────────
+const IS_PROD = process.env.NODE_ENV === 'production' || process.env.SERVE_STATIC === 'true'
+const DIST_DIR = path.join(__dirname, '..', 'frontend', 'dist')
+
+if (IS_PROD && fs.existsSync(DIST_DIR)) {
+    app.use(express.static(DIST_DIR))
+    console.log(`  📦  Serving static frontend from ${DIST_DIR}`)
+}
+
 const server = http.createServer(app)
 const io = new Server(server, {
     cors: { origin: '*', methods: ['GET', 'POST'] },
     transports: ['websocket', 'polling'],
 })
+
 
 // ── Helpers ─────────────────────────────────────────────────────────
 let eventCounter = 0
@@ -208,12 +218,23 @@ app.post('/api/generate-proof', async (req, res) => {
     }
 })
 
+// ── SPA fallback — must be LAST route ───────────────────────────────
+if (IS_PROD && fs.existsSync(DIST_DIR)) {
+    app.get('*', (_req, res) => {
+        res.sendFile(path.join(DIST_DIR, 'index.html'))
+    })
+}
+
 // ── Start ────────────────────────────────────────────────────────────
 server.listen(PORT, () => {
     console.log(`\n╔═══════════════════════════════════════╗`)
     console.log(`║  AegisGrid Gateway  →  :${PORT}          ║`)
     console.log(`║  AI Engine expected →  :8001          ║`)
-    console.log(`║  Frontend expected  →  :5173          ║`)
+    if (IS_PROD) {
+        console.log(`║  Frontend served    →  :${PORT} (static) ║`)
+    } else {
+        console.log(`║  Frontend expected  →  :5173          ║`)
+    }
     console.log(`╚═══════════════════════════════════════╝\n`)
     startLoops()
 })

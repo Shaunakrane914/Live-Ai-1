@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useId } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 
@@ -14,6 +14,7 @@ export default function PageInfo({ title, description, diagramSrc }: PageInfoPro
   const buttonRef = useRef<HTMLButtonElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const popoverId = useId()
 
   const openPopover = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
@@ -23,6 +24,13 @@ export default function PageInfo({ title, description, diagramSrc }: PageInfoPro
   const closePopover = () => {
     hoverTimeoutRef.current = setTimeout(() => setIsOpen(false), 150)
   }
+
+  // Escape key closes popover
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsOpen(false) }
+    if (isOpen) document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [isOpen])
 
   // Position the portal popover directly below the button
   useEffect(() => {
@@ -56,9 +64,16 @@ export default function PageInfo({ title, description, diagramSrc }: PageInfoPro
       {/* 3D Glowing Trigger Button */}
       <motion.button
         ref={buttonRef}
+        type="button"
+        aria-label={`Info: ${title}`}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-controls={popoverId}
         onClick={() => setIsOpen(!isOpen)}
         onMouseEnter={openPopover}
         onMouseLeave={closePopover}
+        onFocus={openPopover}
+        onBlur={closePopover}
         whileHover={{ scale: 1.1, rotateY: 10 }}
         whileTap={{ scale: 0.95 }}
         animate={{
@@ -69,7 +84,7 @@ export default function PageInfo({ title, description, diagramSrc }: PageInfoPro
           y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
           rotateZ: { duration: 6, repeat: Infinity, ease: "easeInOut" }
         }}
-        className="relative w-8 h-8 rounded-full flex items-center justify-center group"
+        className="relative w-8 h-8 rounded-full flex items-center justify-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
         style={{ transformStyle: 'preserve-3d' }}
       >
         {/* Outer glowing ring */}
@@ -116,6 +131,10 @@ export default function PageInfo({ title, description, diagramSrc }: PageInfoPro
       {/* Portal popover — renders into body, always above everything */}
       {isOpen && createPortal(
         <motion.div
+          id={popoverId}
+          role="dialog"
+          aria-modal="false"
+          aria-label={title}
           ref={popoverRef}
           onMouseEnter={openPopover}
           onMouseLeave={closePopover}

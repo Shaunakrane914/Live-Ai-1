@@ -94,29 +94,39 @@ def kill_port(port: int):
         pass   # port was free — nothing to kill
 
 
-def check_deps():
-    """Auto-install node_modules if missing."""
+def check_deps() -> bool:
+    """Install node_modules and build frontend if on Render. Returns True if on Render."""
     npm = shutil.which("npm") or "npm"
+    is_render = bool(os.environ.get("RENDER") or os.environ.get("IS_RENDER"))
+
     for label, path in [("Gateway", BACKEND_DIR), ("Frontend", FRONTEND_DIR)]:
         nm = os.path.join(path, "node_modules")
         if not os.path.isdir(nm):
-            print(f"  📦  {label}: node_modules not found — running npm install in {path} …")
+            print(f"  📦  {label}: node_modules not found — running npm install …")
+            # On Render NODE_ENV=production skips devDeps — force --include=dev
+            install_cmd = [npm, "install", "--include=dev"] if is_render else [npm, "install", "--prefer-offline"]
             try:
-                result = subprocess.run(
-                    [npm, "install", "--prefer-offline"],
-                    cwd=path,
-                    check=True,
-                    capture_output=True,
-                    text=True,
-                )
+                subprocess.run(install_cmd, cwd=path, check=True, capture_output=True, text=True)
                 print(f"  ✅  {label}: npm install complete")
             except subprocess.CalledProcessError as e:
                 print(f"  ❌  {label}: npm install failed:\n{e.stderr}")
         else:
             print(f"  ✅  {label}: node_modules OK")
 
+    # On Render: build the frontend so gateway can serve it statically
+    if is_render:
+        dist = os.path.join(FRONTEND_DIR, "dist")
+        print(f"  🔨  Render detected — building frontend …")
+        try:
+            subprocess.run([npm, "run", "build"], cwd=FRONTEND_DIR, check=True, capture_output=True, text=True)
+            print(f"  ✅  Frontend built → {dist}")
+        except subprocess.CalledProcessError as e:
+            print(f"  ❌  Frontend build failed:\n{e.stderr}")
+
     if not shutil.which("node"):
-        print("  ⚠  node not found in PATH — Gateway and Frontend will fail")
+        print("  ⚠  node not found in PATH — Gateway will fail")
+
+    return is_render
 
 
 def start_services(prod: bool = False) -> list[subprocess.Popen]:
@@ -187,16 +197,19 @@ def main():
                         help="Skip Vite dev server (production mode)")
     args = parser.parse_args()
 
-    banner(args.prod)
-    check_deps()
+    # check_deps now returns True when running on Render
+    is_render = check_deps()
+    prod = args.prod or is_render   # Render always runs in prod mode
+
+    banner(prod)
 
     # Kill anything already on those ports so we don't hit EADDRINUSE
-    ports_to_clear = [8001, 8000] + ([] if args.prod else [5173])
+    ports_to_clear = [8001, 8000] + ([] if prod else [5173])
     for p in ports_to_clear:
         kill_port(p)
         time.sleep(0.1)
 
-    procs = start_services(prod=args.prod)
+    procs = start_services(prod=prod)
 
     if not procs:
         print("\n  ❌  No services started — exiting.")

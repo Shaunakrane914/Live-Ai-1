@@ -8,12 +8,14 @@ import AmmPage from './pages/AmmPage'
 import NodePage from './pages/NodePage'
 import ZkTerminalPage from './pages/ZkTerminalPage'
 import AboutPage from './pages/AboutPage'
+import MobileGuard from './components/ui/MobileGuard'
+import BootSplash from './components/ui/BootSplash'
 import './index.css'
 
 // Full-screen intro component
 function IntroScreen({ onComplete }: { onComplete: () => void }) {
   const [showText, setShowText] = useState(false)
-  
+
   useEffect(() => {
     // Show text after brief delay
     const textTimer = setTimeout(() => setShowText(true), 300)
@@ -63,33 +65,36 @@ function App() {
   }, [showIntro])
 
   return (
-    <BrowserRouter>
-      <WebSocketProvider>
-        <AnimatePresence mode="wait">
-          {showIntro && (
-            <IntroScreen key="intro" onComplete={() => setShowIntro(false)} />
-          )}
-        </AnimatePresence>
-        
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: showContent ? 1 : 0 }}
-          transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
-          className="h-full"
-        >
-          <DashboardLayout>
-            <Routes>
-              <Route path="/" element={<Navigate to="/overview" replace />} />
-              <Route path="/overview" element={<OverviewPage />} />
-              <Route path="/amm" element={<AmmPage />} />
-              <Route path="/node/:id" element={<NodePage />} />
-              <Route path="/zk-terminal" element={<ZkTerminalPage />} />
-              <Route path="/about" element={<AboutPage />} />
-            </Routes>
-          </DashboardLayout>
-        </motion.div>
-      </WebSocketProvider>
-    </BrowserRouter>
+    <MobileGuard>
+      <BrowserRouter>
+        <WebSocketProvider>
+          <BootSplash />
+          <AnimatePresence mode="wait">
+            {showIntro && (
+              <IntroScreen key="intro" onComplete={() => setShowIntro(false)} />
+            )}
+          </AnimatePresence>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: showContent ? 1 : 0 }}
+            transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+            className="h-full"
+          >
+            <DashboardLayout>
+              <Routes>
+                <Route path="/" element={<Navigate to="/overview" replace />} />
+                <Route path="/overview" element={<OverviewPage />} />
+                <Route path="/amm" element={<AmmPage />} />
+                <Route path="/node/:id" element={<NodePage />} />
+                <Route path="/zk-terminal" element={<ZkTerminalPage />} />
+                <Route path="/about" element={<AboutPage />} />
+              </Routes>
+            </DashboardLayout>
+          </motion.div>
+        </WebSocketProvider>
+      </BrowserRouter>
+    </MobileGuard>
   )
 }
 
