@@ -77,11 +77,16 @@ TRAIN_EVERY   = 20               # DDPG update every N ticks
 _ws_clients: set[WebSocket] = set()
 
 # ── Optional: Load pre-trained Actor weights (from train_agent.py output) ─────
-def _try_load_pretrained_actor():
+def _try_load_pretrained_actor() -> bool:
     """
-    If aegis_actor_weights.pth exists (produced by train_agent.py),
-    load it into the agent's actor for immediate live inference.
-    Falls back to untrained actor gracefully.
+    Attempts to load pre-trained Actor weights into the DDPG agent.
+
+    This function searches for 'aegis_actor_weights.pth' in the module directory.
+    If found, it initializes the Actor and Actor-Target networks with these weights,
+    placing the model in evaluation mode for inference.
+
+    Returns:
+        bool: True if weights were loaded successfully, False otherwise.
     """
     weights_path = os.path.join(os.path.dirname(__file__), "aegis_actor_weights.pth")
     if not os.path.exists(weights_path):
@@ -166,11 +171,15 @@ def _build_state(info: dict, fee: float, reward: float) -> dict:
 
 async def _simulation_loop():
     """
-    Core 500ms tick loop.
-    1. DDPG selects swap fee from 7-dim observation
-    2. AegisEnv steps forward one 30-min simulation timestep
-    3. Experience stored; DDPG trained every TRAIN_EVERY steps
-    4. SimState broadcast to all WebSocket clients
+    Main asynchronous simulation background worker loop.
+
+    Pumps the simulation at a constant tick rate (500ms).
+    In each iteration, it:
+        1. Queries the DDPG Actor network for the optimal swap fee adjustment.
+        2. Steps the AegisEnv world state (physics + battery modeling).
+        3. Persists the transition to the Experience Replay buffer.
+        4. Periodically updates neural network weights (DDPG update).
+        5. Synchronizes and broadcasts SimState JSON to all WebSocket clients.
     """
     global _obs, _last_state, _step_count
 

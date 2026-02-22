@@ -4,8 +4,35 @@ import { useNavigate } from 'react-router-dom'
 
 function SidebarCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="bg-[#171A21]/60 border border-[#2A2E39]/60 rounded-lg p-4">
-      <h3 className="text-xs font-bold text-[#4DA3FF] uppercase tracking-wider mb-2">{title}</h3>
+    <div className="bg-[#171A21]/60 border border-[#2A2E39]/60 rounded-xl p-6">
+      <h3 className="text-sm font-bold text-[#4DA3FF] uppercase tracking-wider mb-4">{title}</h3>
+      {children}
+    </div>
+  )
+}
+
+function Section({ title, icon, children, border = true }: { title: string; icon: string; children: ReactNode; border?: boolean }) {
+  return (
+    <section>
+      <h2 className={`text-2xl font-bold text-slate-100 flex items-center gap-3 mb-4 pb-2 ${border ? 'border-b border-slate-800' : ''}`}>
+        <span>{icon}</span>
+        {title}
+      </h2>
+      <div className="space-y-4">
+        {children}
+      </div>
+    </section>
+  )
+}
+
+function MarketCard({ type, title, children }: { type: 'blue' | 'purple', title: string, children: ReactNode }) {
+  const styles = type === 'blue'
+    ? "border-[#2A2E39] bg-[#0F1115] text-[#4DA3FF]"
+    : "border-purple-900/50 bg-purple-950/20 text-purple-400";
+
+  return (
+    <div className={`p-5 rounded-xl border ${styles.split(' ')[0]} ${styles.split(' ')[1]}`}>
+      <p className={`text-xs font-mono uppercase tracking-widest ${styles.split(' ')[2]} mb-3`}>{title}</p>
       {children}
     </div>
   )
@@ -55,82 +82,64 @@ export default function AboutPage() {
       </div>
 
       {/* Main two-column content */}
-      <div className="max-w-6xl mx-auto w-full px-6 lg:px-12 mt-12 flex flex-col lg:flex-row gap-16">
+      <div className="w-full mt-12 flex flex-col lg:flex-row lg:justify-between">
         {/* LEFT COLUMN - Story */}
-        <div className="lg:w-2/3 flex flex-col gap-10">
-          <section>
-            <h2 className="text-2xl font-bold text-slate-100 flex items-center gap-3 mb-4 pb-2 border-b border-slate-800">
-              <span>🦖</span>
-              The Problem: The Dinosaur Grid
-            </h2>
-            <div className="space-y-4">
-              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                Imagine the traditional power grid as a giant, clumsy dinosaur. A massive power plant
-                sits miles away, pumping electricity in one direction to millions of homes. If a tree
-                falls on the main power line, or the plant fails, the whole city goes dark.
-              </p>
-              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                If you put solar panels on your roof, the dinosaur doesn't let you sell your extra
-                sunlight directly to your neighbor. You have to sell it back for pennies, and they
-                sell it to your neighbor for a massive profit.
-              </p>
-              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                <span className="text-[#4DA3FF] font-semibold">Gridium fixes this</span> by chopping
-                the dinosaur into tiny, self-sustaining neighborhoods called{' '}
-                <span className="text-slate-100 font-semibold">"Microgrids."</span>
-              </p>
-            </div>
-          </section>
+        <div className="lg:w-3/5 px-6 lg:pl-12 flex flex-col gap-10">
+          <Section title="The Problem: The Dinosaur Grid" icon="🦖">
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+              Imagine the traditional power grid as a giant, clumsy dinosaur. A massive power plant
+              sits miles away, pumping electricity in one direction to millions of homes. If a tree
+              falls on the main power line, or the plant fails, the whole city goes dark.
+            </p>
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+              If you put solar panels on your roof, the dinosaur doesn't let you sell your extra
+              sunlight directly to your neighbor. You have to sell it back for pennies, and they
+              sell it to your neighbor for a massive profit.
+            </p>
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+              <span className="text-[#4DA3FF] font-semibold">Gridium fixes this</span> by chopping
+              the dinosaur into tiny, self-sustaining neighborhoods called{' '}
+              <span className="text-slate-100 font-semibold">"Microgrids."</span>
+            </p>
+          </Section>
 
-          <section>
-            <h2 className="text-2xl font-bold text-slate-100 flex items-center gap-3 mb-4 pb-2 border-b border-slate-800">
-              <span>🏘️</span>
-              The Solution: Autonomous Neighbors
-            </h2>
-            <div className="space-y-4">
-              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                Imagine a neighborhood of 15 houses. Some have solar panels and batteries; some just
-                consume power. We call them{' '}
-                <span className="text-emerald-400 font-semibold">"Prosumers"</span> (Producers + Consumers).
-              </p>
-              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                Instead of relying on the giant power plant, these houses are wired together. When House A
-                has excess sun, it automatically sends power to House B running its air conditioning.
-              </p>
-              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                But how do they agree on a price? And how do we stop the grid from crashing when
-                everyone's solar panels stop working at the exact same time?
-              </p>
-            </div>
-          </section>
+          <Section title="The Solution: Autonomous Neighbors" icon="🏘️">
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+              Imagine a neighborhood of 15 houses. Some have solar panels and batteries; some just
+              consume power. We call them{' '}
+              <span className="text-emerald-400 font-semibold">"Prosumers"</span> (Producers + Consumers).
+            </p>
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+              Instead of relying on the giant power plant, these houses are wired together. When House A
+              has excess sun, it automatically sends power to House B running its air conditioning.
+            </p>
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+              But how do they agree on a price? And how do we stop the grid from crashing when
+              everyone's solar panels stop working at the exact same time?
+            </p>
+          </Section>
 
-          <section>
-            <h2 className="text-2xl font-bold text-slate-100 flex items-center gap-3 mb-4 pb-2 border-b border-slate-800">
-              <span>🏪</span>
-              The Market: The Magic Vending Machine
-            </h2>
-            <div className="space-y-4">
-              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                To let houses trade power instantly without a middleman, we built an{' '}
-                <span className="text-blue-400 font-semibold">Automated Market Maker (AMM)</span> on
-                the blockchain — a giant, magical vending machine at the center of the neighborhood.
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 p-4 bg-[#0F1115] border border-[#2A2E39] rounded-xl">
-                  <span className="text-blue-400 font-bold text-lg mt-0.5">→</span>
-                  <p className="text-base md:text-lg text-slate-300 leading-relaxed">Extra power? Your house dumps it in and gets paid instantly in USDC.</p>
-                </div>
-                <div className="flex items-start gap-3 p-4 bg-[#0F1115] border border-[#2A2E39] rounded-xl">
-                  <span className="text-blue-400 font-bold text-lg mt-0.5">→</span>
-                  <p className="text-base md:text-lg text-slate-300 leading-relaxed">Need power? Your house buys it automatically. No waiting for a buyer or seller.</p>
-                </div>
+          <Section title="The Market: The Magic Vending Machine" icon="🏪">
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+              To let houses trade power instantly without a middleman, we built an{' '}
+              <span className="text-blue-400 font-semibold">Automated Market Maker (AMM)</span> on
+              the blockchain — a giant, magical vending machine at the center of the neighborhood.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-4 bg-[#0F1115] border border-[#2A2E39] rounded-xl">
+                <span className="text-blue-400 font-bold text-lg mt-0.5">→</span>
+                <p className="text-base md:text-lg text-slate-300 leading-relaxed">Extra power? Your house dumps it in and gets paid instantly in USDC.</p>
               </div>
-              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                The blockchain acts as a flawless, robotic accountant settling trades in milliseconds,
-                permanently and transparently.
-              </p>
+              <div className="flex items-start gap-3 p-4 bg-[#0F1115] border border-[#2A2E39] rounded-xl">
+                <span className="text-blue-400 font-bold text-lg mt-0.5">→</span>
+                <p className="text-base md:text-lg text-slate-300 leading-relaxed">Need power? Your house buys it automatically. No waiting for a buyer or seller.</p>
+              </div>
             </div>
-          </section>
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+              The blockchain acts as a flawless, robotic accountant settling trades in milliseconds,
+              permanently and transparently.
+            </p>
+          </Section>
 
           <section>
             <h2 className="text-2xl font-bold text-slate-100 flex items-center gap-3 mb-4 pb-2 border-b border-slate-800">
@@ -223,133 +232,123 @@ export default function AboutPage() {
             </div>
           </section>
           {/* Go-To-Market & Disruptive Potential */}
-          <section>
-            <div className="mt-4 pt-8 border-t border-slate-800">
-              <h2 className="text-2xl font-bold text-slate-100 flex items-center gap-3 mb-6 pb-2 border-b border-slate-800">
-                <span>📈</span>
-                Go-To-Market &amp; Disruptive Potential
-              </h2>
-              <div className="space-y-6">
-                <div className="p-5 rounded-xl border border-[#2A2E39] bg-[#0F1115]">
-                  <p className="text-xs font-mono uppercase tracking-widest text-[#4DA3FF] mb-3">Validated Demand &amp; Market Fit</p>
-                  <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                    The current grid infrastructure is failing under the weight of renewable energy
-                    integration — a validated demand signal backed by the global surge in rooftop solar
-                    adoption and government DER mandates. Gridium directly aligns with this massive market
-                    shift by offering an AI-governed, AMM-based microgrid, providing a{' '}
-                    <span className="text-[#4DA3FF] font-semibold">robust strategy indicating high adoption potential</span>{' '}
-                    for modern residential developers, solar-equipped municipalities, and decentralised
-                    autonomous communities.
-                  </p>
-                </div>
-                <div className="p-5 rounded-xl border border-purple-900/50 bg-purple-950/20">
-                  <p className="text-xs font-mono uppercase tracking-widest text-purple-400 mb-3">Vision &amp; Eventual Dominance</p>
-                  <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                    Gridium is not an incremental improvement — it is a{' '}
-                    <span className="text-purple-300 font-semibold">breakthrough approach</span>{' '}
-                    with a visionary product positioned for longevity and eventual dominance in the{' '}
-                    <span className="text-emerald-400 font-semibold">DePIN (Decentralised Physical Infrastructure Network)</span>{' '}
-                    sector. By merging zero-knowledge privacy with reinforcement learning on top of a
-                    physical energy substrate, Gridium has the high potential to lead or transform the
-                    entire market of peer-to-peer energy trading — setting a new primitive that every
-                    future microgrid protocol will be measured against.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
+          <Section title="Go-To-Market & Disruptive Potential" icon="📈">
+            <MarketCard type="blue" title="Validated Demand & Market Fit">
+              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+                The current grid infrastructure is failing under the weight of renewable energy
+                integration — a validated demand signal backed by the global surge in rooftop solar
+                adoption and government DER mandates. Gridium directly aligns with this massive market
+                shift by offering an AI-governed, AMM-based microgrid, providing a{' '}
+                <span className="text-[#4DA3FF] font-semibold">robust strategy indicating high adoption potential</span>{' '}
+                for modern residential developers, solar-equipped municipalities, and decentralised
+                autonomous communities.
+              </p>
+            </MarketCard>
+            <MarketCard type="purple" title="Vision & Eventual Dominance">
+              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+                Gridium is not an incremental improvement — it is a{' '}
+                <span className="text-purple-300 font-semibold">breakthrough approach</span>{' '}
+                with a visionary product positioned for longevity and eventual dominance in the{' '}
+                <span className="text-emerald-400 font-semibold">DePIN (Decentralised Physical Infrastructure Network)</span>{' '}
+                sector. By merging zero-knowledge privacy with reinforcement learning on top of a
+                physical energy substrate, Gridium has the high potential to lead or transform the
+                entire market of peer-to-peer energy trading — setting a new primitive that every
+                future microgrid protocol will be measured against.
+              </p>
+            </MarketCard>
+          </Section>
         </div>
 
         {/* RIGHT COLUMN - Tech Stack Sidebar */}
-        <div className="lg:w-1/3">
-          <div className="sticky top-8 flex flex-col gap-4">
+        <div className="lg:w-2/5 px-6 lg:pr-12 lg:pl-6">
+          <div className="sticky top-8 flex flex-col gap-5">
             <SidebarCard title="🔧 Tech Stack">
               <div className="space-y-2 text-sm text-[#9DA7B3]">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4DA3FF]" />
+                  <span className="w-2 h-2 rounded-full bg-[#4DA3FF]" />
                   <span>React + TypeScript</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4DA3FF]" />
+                  <span className="w-2 h-2 rounded-full bg-[#4DA3FF]" />
                   <span>Tailwind CSS</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4DA3FF]" />
+                  <span className="w-2 h-2 rounded-full bg-[#4DA3FF]" />
                   <span>Framer Motion</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4DA3FF]" />
+                  <span className="w-2 h-2 rounded-full bg-[#4DA3FF]" />
                   <span>Three.js / R3F</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4DA3FF]" />
+                  <span className="w-2 h-2 rounded-full bg-[#4DA3FF]" />
                   <span>Zustand</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4DA3FF]" />
+                  <span className="w-2 h-2 rounded-full bg-[#4DA3FF]" />
                   <span>WebSocket</span>
                 </div>
               </div>
             </SidebarCard>
 
             <SidebarCard title="🤖 ML Models">
-              <div className="space-y-2 text-sm text-[#9DA7B3]">
+              <div className="space-y-3 text-base text-[#9DA7B3]">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                  <span className="w-2 h-2 rounded-full bg-purple-400" />
                   <span>DDPG Agent</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                  <span className="w-2 h-2 rounded-full bg-purple-400" />
                   <span>Reinforcement Learning</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                  <span className="w-2 h-2 rounded-full bg-purple-400" />
                   <span>Actor-Critic</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                  <span className="w-2 h-2 rounded-full bg-purple-400" />
                   <span>Experience Replay</span>
                 </div>
               </div>
             </SidebarCard>
 
             <SidebarCard title="📊 Dataset">
-              <div className="space-y-2 text-sm text-[#9DA7B3]">
+              <div className="space-y-3 text-base text-[#9DA7B3]">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span>15 Prosumer Nodes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span>Solar Generation Data</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span>Load Patterns</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span>Battery SOC</span>
                 </div>
               </div>
             </SidebarCard>
 
             <SidebarCard title="⚡ Live">
-              <div className="space-y-2 text-sm text-[#9DA7B3]">
+              <div className="space-y-3 text-base text-[#9DA7B3]">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
                   <span>WebSocket Updates</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
                   <span>AMM Price Oracle</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
                   <span>3D Visualization</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
                   <span>ZK Proofs Live</span>
                 </div>
               </div>

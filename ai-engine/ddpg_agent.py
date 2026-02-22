@@ -41,7 +41,15 @@ FEE_MAX = 0.05               # 5.0%
 
 
 def _action_to_fee(action_01: float) -> float:
-    """Map normalised [0,1] action → fee in [FEE_MIN, FEE_MAX]."""
+    """
+    Rescales a normalized agent action [0, 1] to the physical swap fee range.
+
+    Args:
+        action_01 (float): Raw sigmoid output from the Actor network.
+
+    Returns:
+        float: Scaled fee percentage (e.g., 0.0134 for 1.34%).
+    """
     return FEE_MIN + float(action_01) * (FEE_MAX - FEE_MIN)
 
 
@@ -100,8 +108,12 @@ class OUNoise:
 # ══════════════════════════════════════════════════════════════════════════════
 class Actor(nn.Module):
     """
-    Maps 7-dim grid state → normalised swap fee ∈ (0, 1).
-    LayerNorm prevents gradient explosion with non-stationary inputs.
+    The Deterministic Policy network (state → action).
+
+    Architectural Pattern:
+        - Maps a 7-dimensional microgrid observation vector to a single scalar action.
+        - Uses Layer Normalization for improved training stability with non-stationary inputs.
+        - Output is squashed via Sigmoid to bound swap-fee adjustments within [0.1%, 5.0%].
     """
 
     def __init__(self, state_dim=STATE_DIM, action_dim=ACTION_DIM, hidden=HIDDEN_DIM):
@@ -143,8 +155,13 @@ class Actor(nn.Module):
 # ══════════════════════════════════════════════════════════════════════════════
 class Critic(nn.Module):
     """
-    Action injected at the second hidden layer — standard DDPG pattern.
-    Allows state features to develop before merging with action.
+    The Action-Value (Q) network (state + action → Q-value).
+
+    Architectural Pattern:
+        - Implements a bifurcated architecture where state features are extracted before
+          being concatenated with the candidate action.
+        - Approximates the Q-value (expected cumulative future reward) for the protocol
+          state under a given fee adjustment policy.
     """
 
     def __init__(self, state_dim=STATE_DIM, action_dim=ACTION_DIM, hidden=HIDDEN_DIM):
@@ -177,8 +194,13 @@ class Critic(nn.Module):
 # ══════════════════════════════════════════════════════════════════════════════
 class DDPGAgent:
     """
-    Orchestrates Actor, Critic, target networks, experience replay,
-    and soft target updates for AegisGrid fee optimisation.
+    The main DDPG orchestrator for the AegisGrid protocol.
+
+    This class manages:
+        - The Actor-Critic neural networks and their respective target clones.
+        - Experience Replay buffering for off-policy training stability.
+        - Soft-target updates (Polyak averaging) to ensure convergence.
+        - Action selection for real-time inference and training-time exploration.
     """
 
     def __init__(self):

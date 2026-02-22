@@ -29,7 +29,7 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 
-from physics_oracle import AegisGridPhysics
+from physics import AegisGridPhysics
 
 
 # ── Reward weights (from SDD §3.1.4) ─────────────────────────────────────────
@@ -58,7 +58,18 @@ MAX_STEPS = 48    # 48 × 30min = 24h per episode
 class AegisEnv(gym.Env):
     """
     Custom Gymnasium environment for the AegisGrid microgrid protocol.
-    Compatible with Stable-Baselines3 / any DDPG implementation.
+
+    This class bridges the AegisGridPhysics model into a standardized RL 
+    interface. It implements a 7-dimensional observation space (load, gen, 
+    imbalance, reserves, price, SoC) and a 1-dimensional action space 
+    (swap fee).
+
+    State Schema:
+        [0:1] Load/Gen (kW normalized)
+        [2]   Imbalance (normalized surplus/deficit)
+        [3:4] AMM Reserves (x, y)
+        [5]   Spot Price
+        [6]   Microgrid aggregate SoC
     """
 
     metadata = {"render_modes": []}

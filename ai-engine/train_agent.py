@@ -25,7 +25,7 @@ import time
 
 # Local imports
 from ddpg_agent import DDPGAgent, DEVICE, BATCH_SIZE
-from physics_oracle import AegisGridEnv
+from aegis_training_env import AegisGridEnv
 
 # ── Config ────────────────────────────────────────────────────────────────────
 EPISODES          = 500
@@ -46,14 +46,21 @@ SURPLUS_BONUS     = +2.0       # small reward for efficient surplus state
 
 def compute_reward(net_imbalance: float, aggregate_soc: float) -> float:
     """
-    Mathematically defined reward function.
-    
+    Mathematically defined reward function for microgrid fee optimization.
+
+    This objective function implements multi-objective reward shaping:
+        1. Imbalance Penalty: Scaled absolute difference between generation and load.
+        2. Low-SOC Penalty: Penalizes states where the grid aggregate battery level
+           drops below a critical threshold (BETA=0.5).
+        3. Blackout/Surplus Logic: Discrete bonuses/penalties for extreme or 
+           highly efficient states.
+
     Args:
-        net_imbalance  : grid_gen - grid_load (positive = surplus, negative = deficit)
-        aggregate_soc  : mean battery SoC across all nodes [0, 100]
-    
+        net_imbalance (float): Total grid generation minus total load in kW.
+        aggregate_soc (float): Mean State-of-Charge [%] across all 15 prosumer nodes.
+
     Returns:
-        Scalar reward signal.
+        float: Scalar reward signal for the DDPG Critic.
     """
     # Primary penalty: discourage any imbalance in either direction
     r = -ALPHA * abs(net_imbalance)

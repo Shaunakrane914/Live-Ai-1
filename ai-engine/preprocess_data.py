@@ -46,6 +46,12 @@ OUTPUT_PATH  = os.path.join(SCRIPT_DIR, "aegis_training_data.csv")
 
 
 def separator(title):
+    """
+    Prints a formatted visual header to the console for simulation logging.
+    
+    Args:
+        title (str): The step description to display.
+    """
     print(f"\n{'─'*55}")
     print(f"  {title}")
     print('─'*55)
