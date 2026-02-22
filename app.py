@@ -95,38 +95,34 @@ def kill_port(port: int):
 
 
 def check_deps() -> bool:
-    """Install node_modules and build frontend if on Render. Returns True if on Render."""
-    npm = shutil.which("npm") or "npm"
+    """Check if on Render and handle local dependency verification."""
     is_render = bool(os.environ.get("RENDER") or os.environ.get("IS_RENDER"))
+    
+    # On Render, we assume the Build Command handled everything.
+    # We skip npm install and build to ensure the start command binds to the port instantly.
+    if is_render:
+        print("  ☁️  Render environment detected — skipping setup to ensure instant port binding.")
+        return True
+
+    npm = shutil.which("npm") or "npm"
 
     for label, path in [("Gateway", BACKEND_DIR), ("Frontend", FRONTEND_DIR)]:
         nm = os.path.join(path, "node_modules")
         if not os.path.isdir(nm):
             print(f"  📦  {label}: node_modules not found — running npm install …")
-            # On Render NODE_ENV=production skips devDeps — force --include=dev
-            install_cmd = [npm, "install", "--include=dev"] if is_render else [npm, "install", "--prefer-offline"]
+            # Prefer offline to speed up local dev
             try:
-                subprocess.run(install_cmd, cwd=path, check=True, capture_output=True, text=True)
+                subprocess.run([npm, "install", "--prefer-offline"], cwd=path, check=True, capture_output=True, text=True)
                 print(f"  ✅  {label}: npm install complete")
             except subprocess.CalledProcessError as e:
                 print(f"  ❌  {label}: npm install failed:\n{e.stderr}")
         else:
             print(f"  ✅  {label}: node_modules OK")
 
-    # On Render: build the frontend so gateway can serve it statically
-    if is_render:
-        dist = os.path.join(FRONTEND_DIR, "dist")
-        print(f"  🔨  Render detected — building frontend …")
-        try:
-            subprocess.run([npm, "run", "build"], cwd=FRONTEND_DIR, check=True, capture_output=True, text=True)
-            print(f"  ✅  Frontend built → {dist}")
-        except subprocess.CalledProcessError as e:
-            print(f"  ❌  Frontend build failed:\n{e.stderr}")
-
     if not shutil.which("node"):
         print("  ⚠  node not found in PATH — Gateway will fail")
 
-    return is_render
+    return False
 
 
 def start_services(prod: bool = False) -> list[subprocess.Popen]:

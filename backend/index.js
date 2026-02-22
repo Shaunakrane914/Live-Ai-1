@@ -226,15 +226,14 @@ if (IS_PROD && fs.existsSync(DIST_DIR)) {
 }
 
 // ── Start ────────────────────────────────────────────────────────────
-server.listen(PORT, () => {
-    console.log(`\n╔═══════════════════════════════════════╗`)
-    console.log(`║  AegisGrid Gateway  →  :${PORT}          ║`)
-    console.log(`║  AI Engine expected →  :8001          ║`)
+// The '0.0.0.0' is absolutely critical for Render to detect the open port
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ AegisGrid Gateway → :${PORT} (0.0.0.0)`)
+    console.log(`   AI Engine expected → :8001`)
     if (IS_PROD) {
-        console.log(`║  Frontend served    →  :${PORT} (static) ║`)
+        console.log(`   Frontend served    → :${PORT} (static)`)
     } else {
-        console.log(`║  Frontend expected  →  :5173          ║`)
+        console.log(`   Frontend expected  → :5173`)
     }
-    console.log(`╚═══════════════════════════════════════╝\n`)
     startLoops()
 })
