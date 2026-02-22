@@ -1,3 +1,33 @@
+/**
+ * @module NodePage — Prosumer Terminal
+ * @description
+ * Individual telemetry dashboard for a single Prosumer Node within the Gridium
+ * microgrid. A "Prosumer" is a residential unit that simultaneously **produces**
+ * (via rooftop solar) and **consumes** electricity, acting as an autonomous agent
+ * in the peer-to-peer energy market.
+ *
+ * @architecture
+ * This page adopts a *route-parameter-driven* pattern: the node ID is read from
+ * `useParams()` and used to slice the relevant agent state from the global Zustand
+ * store. This enables deep-linking to any node (e.g., `/node/7`) without additional
+ * API calls, keeping the component stateless with respect to data fetching.
+ *
+ * Sub-components (`HolographicCard`, `GaugeArc`, `MiniSparkline`) are co-located in
+ * this file for cohesion — each is a pure function that receives only the props it
+ * renders, making them trivially unit-testable in isolation.
+ *
+ * @best-practices
+ * - All derived metrics (P&L, ZK ID, decision matrix) are computed with `useMemo`,
+ *   preventing recalculation on every 500 ms WebSocket tick.
+ * - The 3D holographic card effect uses CSS `perspective` and Framer Motion `rotateX/Y`
+ *   driven by `onMouseMove`, achieving high-fidelity interaction with zero canvas overhead.
+ * - The ZK proof ID is regenerated deterministically from node state, so it remains
+ *   consistent across renders within the same tick.
+ *
+ * @param {string} nodeId — URL path parameter identifying the prosumer node (1-indexed)
+ *
+ * @see {@link https://github.com/YashPandit09/Live-Ai} Gridium Protocol Repository
+ */
 import { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'

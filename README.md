@@ -24,7 +24,24 @@ Trading energy on a public blockchain is dangerous. If everyone can see when you
 
 ---
 
-## 🖥️ Command Center Architecture
+## � Go-To-Market & Disruptive Potential
+
+**Validated Demand & Market Fit:**
+The current grid infrastructure is failing under the weight of renewable energy integration. Gridium directly aligns with the massive market shift toward decentralized energy resources (DERs). By offering an AI-governed, AMM-based microgrid, we provide a robust strategy indicating high adoption potential for modern residential developers and solar-equipped municipalities.
+
+**Vision & Eventual Dominance:**
+Gridium is not just an incremental improvement—it is a visionary product with a strong future outlook. By merging zero-knowledge privacy with reinforcement learning, we have the high potential to lead or transform the entire market of peer-to-peer energy trading, positioning this protocol for longevity and eventual dominance in the decentralized physical infrastructure network (DePIN) sector.
+
+---
+
+## 🔬 Tech Innovation
+
+**Impressive Originality — DDPG × Groth16 on Physical Infrastructure:**
+Gridium's breakthrough approach lies in combining two frontier technologies — **Deep Deterministic Policy Gradient (DDPG) Reinforcement Learning** and **Groth16 zk-SNARKs** — to solve a real-world physical infrastructure problem. Most blockchain projects apply smart contracts to financial abstractions. Gridium applies them to *watts and kilowatt-hours*. The DDPG agent learns, in real-time, to use swap-fee economics as a control signal to prevent physical grid failure — a technique with significant potential to reshape how autonomous infrastructure systems are designed globally. Combined with privacy-preserving zk-proof settlement, Gridium is a forward-thinking protocol that sits at the intersection of AI, cryptography, and energy systems engineering.
+
+
+
+## �🖥️ Command Center Architecture
 
 ### 1. Macro Grid Topology
 A live 3D visualization of 15 autonomous "Prosumer" nodes trading peer-to-peer around the central AMM router.
@@ -143,9 +160,9 @@ MIT License.
 
 ## 👥 Team
 
-- **Shaunak Rane** - Frontend Architecture & 3D Visualization
+- **Shaunak Rane** - Backend Ai & 3D Vizualization
 - **Yash Pandit** - Smart Contracts & ZK Implementation
-- **Backend AI Team** - DDPG Agent Training & Simulation
+- **Sanket Deka** - Frontend & UI/UX
 
 ---
 

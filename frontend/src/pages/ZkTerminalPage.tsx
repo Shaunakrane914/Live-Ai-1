@@ -1,3 +1,33 @@
+/**
+ * @module ZkTerminalPage — Cryptographic Settlement Terminal
+ * @description
+ * The live security checkpoint and cryptographic audit log for the Gridium Protocol.
+ * This page visualises the real-time pipeline of Groth16 zk-SNARK proof generation,
+ * on-chain verification, and the Slash Registry that penalises malicious or invalid
+ * energy proofs submitted by compromised nodes.
+ *
+ * @architecture
+ * Follows the *Bloomberg-terminal* design pattern: raw cryptographic data is surfaced
+ * as a live event log with syntax-highlighted type tokens (SWAP / ZK_VERIFIED / SLASH).
+ * The event stream is consumed directly from `useGridStore` (Zustand), which is
+ * populated by the Socket.io Gateway — ensuring the UI reacts to backend events
+ * within a single render cycle after the WebSocket message arrives.
+ *
+ * @best-practices
+ * - `TYPE_COLOR` and `TYPE_LABEL` lookup maps are defined as module-level constants,
+ *   preventing object allocation on each render and enabling O(1) token resolution.
+ * - The proof-generation animation uses Framer Motion `AnimatePresence` so exiting
+ *   proof entries are removed from the DOM gracefully without layout shift.
+ * - A dedicated `ProofStatusBadge` component encapsulates the verification state logic,
+ *   keeping the main render function clean and readable.
+ *
+ * @security
+ * Proof verification is performed on-chain via the `EnergyMarket` Solidity contract.
+ * This component surfaces the verification result; it never executes cryptographic
+ * operations client-side, maintaining a strict separation between UI and trust layer.
+ *
+ * @see {@link https://github.com/YashPandit09/Live-Ai} Gridium Protocol Repository
+ */
 import { motion } from 'framer-motion'
 import { useGridStore } from '../store/useGridStore'
 import PageInfo from '../components/ui/PageInfo'

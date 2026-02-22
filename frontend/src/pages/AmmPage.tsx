@@ -1,3 +1,35 @@
+/**
+ * @module AmmPage — AMM Trading Floor
+ * @description
+ * The financial settlement layer of the Gridium Protocol. This page renders the
+ * live Automated Market Maker (AMM) UI, split into two modular tabs:
+ *
+ *   1. **Curve & Price** — the x·y=k bonding curve, candlestick price history, and
+ *      swap-fee chart driven by the DDPG AI agent's real-time output.
+ *   2. **Liquidity & ZK** — the LP deposit engine and Groth16 zk-SNARK proof status.
+ *
+ * @architecture
+ * Follows the *compound-component* pattern: `DarkCard` is a generic container that
+ * enforces the Bloomberg-terminal dark aesthetic consistently across all sub-panels.
+ * Data flows unidirectionally from `useGridStore` (Zustand) → component props, with
+ * no local data fetching — keeping this file purely presentational and easily testable.
+ *
+ * @best-practices
+ * - All heavy computations (bonding-curve series, chart data) are memoised with `useMemo`
+ *   to prevent unnecessary re-renders on each 500 ms WebSocket tick.
+ * - The `useGridiumAMM` custom hook encapsulates all on-chain interaction logic,
+ *   maintaining a clean separation of concerns between UI and Web3 state.
+ * - Framer Motion `fadeUp` variants are defined outside the component to avoid
+ *   object recreation on every render cycle.
+ *
+ * @dependencies
+ * - `useGridStore`  — global simulation state (price, fee, reserves)
+ * - `useGridiumAMM` — Web3 hook for swap execution and LP management
+ * - `SwapFeeChart`  — isolated chart micro-component for modularity
+ * - `PageInfo`      — accessible, portal-based info popover
+ *
+ * @see {@link https://github.com/YashPandit09/Live-Ai} Gridium Protocol Repository
+ */
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
