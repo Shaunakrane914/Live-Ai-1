@@ -97,38 +97,34 @@ The cryptographic security checkpoint. Watch live Groth16 proofs be verified on-
 * Hardhat (for local blockchain)
 * Python 3.8+ (for AI engine)
 
-### Installation
+### ⚡ One-Click Master Launch (Recommended)
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/gridium.git
-   cd gridium
-   ```
+The Gridium Command Center features a **Master Launcher** that automatically orchestrates all three services (AI Engine, Gateway, and Frontend) and verifies your dependencies.
 
-2. **Install frontend dependencies:**
+1. **Install requirements:**
    ```bash
-   cd frontend
-   yarn install
-   ```
-
-3. **Install AI engine dependencies:**
-   ```bash
-   cd ../ai-engine
    pip install -r requirements.txt
    ```
 
-4. **Boot the local Hardhat node & deploy contracts:**
+2. **Launch the platform:**
    ```bash
-   cd ../blockchain
-   yarn hardhat node
-   yarn hardhat run scripts/deploy.ts --network localhost
+   python app.py
    ```
 
-5. **Start the Gridium Command Center:**
-   ```bash
-   cd ../frontend
-   yarn dev
-   ```
+> [!TIP]
+> **No manual configuration needed.** The launcher will automatically check for `node_modules`, install missing dependencies, and boot the AI simulation and the interactive dashboard in parallel.
+
+---
+
+### 🛠️ Manual / Advanced Setup
+
+If you prefer to run services individually for debugging:
+
+1. **AI Engine**: `cd ai-engine && uvicorn main:app`
+2. **Gateway**: `cd backend && node index.js`
+3. **Frontend**: `cd frontend && npm run dev`
+4. **Blockchain**: `cd blockchain && npx hardhat node`
+
 
 ---
 
