@@ -166,6 +166,7 @@ def start_services(prod: bool = False) -> list[subprocess.Popen]:
             )
             t = threading.Thread(target=stream, args=(p, svc["name"]), daemon=True)
             t.start()
+            svc["last_pid"] = p.pid  # Track for restarts
             procs.append(p)
             print(f"  ✅  {svc['name']} started (pid {p.pid})")
         except FileNotFoundError as e:
@@ -244,14 +245,54 @@ def main():
     signal.signal(signal.SIGINT,  shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
-    # Keep alive — monitor processes, warn once if one crashes
-    crashed: set[int] = set()
+    # ── Persistent Service Monitor ──────────────────────────────────────────
+    print(f"  🛰️  Monitoring services (Auto-restart enabled) …")
+    
+    # Track restarts to prevent infinite fast-loops if code is broken
+    restart_counts = {p.pid: 0 for p in procs}
+    MAX_RESTARTS = 10
+    
     while True:
-        time.sleep(3)
+        time.sleep(5)
+        new_procs = []
         for p in procs:
-            if p.pid not in crashed and p.poll() is not None:
-                crashed.add(p.pid)
-                print(f"\n  \u26a0  A service (pid {p.pid}) exited unexpectedly.")
+            poll = p.poll()
+            if poll is not None:
+                name = "Unknown"
+                # Find which service this was
+                for s in services:
+                    if s.get("last_pid") == p.pid:
+                        name = s["name"]
+                        break
+                
+                print(f"\n  ⚠️  {prefix(name)}Service died (exit code {poll}). Restarting …")
+                
+                # Identify the original service config
+                svc_config = next((s for s in services if s["name"] == name), None)
+                if svc_config:
+                    try:
+                        new_p = subprocess.Popen(
+                            svc_config["cmd"],
+                            cwd=svc_config["cwd"],
+                            env=svc_config.get("env", os.environ),
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+                        )
+                        threading.Thread(target=stream, args=(new_p, svc_config["name"]), daemon=True).start()
+                        svc_config["last_pid"] = new_p.pid
+                        new_procs.append(new_p)
+                        print(f"  ✅  {svc_config['name']} restarted (new pid {new_p.pid})")
+                    except Exception as e:
+                        print(f"  ❌  Failed to restart {name}: {e}")
+                continue
+            else:
+                new_procs.append(p)
+        
+        procs = new_procs
+        if not procs:
+            print("  🛑 All services dead and could not be restarted. Exiting launcher.")
+            break
 
 
 if __name__ == "__main__":

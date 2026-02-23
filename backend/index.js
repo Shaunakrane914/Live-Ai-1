@@ -142,20 +142,40 @@ async function forwardChaos(chaosType, socket) {
     io.emit('grid_event', makeEvent('CHAOS', labels[pythonType]))
 }
 
+// ── Global Panic Recovery ──────────────────────────────────────────
+process.on('uncaughtException', (err) => {
+    console.error('[PANIC] Uncaught Exception:', err)
+})
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[PANIC] Unhandled Rejection at:', promise, 'reason:', reason)
+})
+
 // ── Socket.io Events ────────────────────────────────────────────────
 io.on('connection', (socket) => {
-    console.log(`[+] Client connected: ${socket.id}`)
-    startLoops()
+    try {
+        console.log(`[+] Client connected: ${socket.id}`)
+        startLoops()
 
-    // Register chaos listeners
-    Object.keys(CHAOS_MAP).forEach((evt) => {
-        socket.on(evt, () => forwardChaos(evt, socket))
-    })
+        // Register chaos listeners
+        Object.keys(CHAOS_MAP).forEach((evt) => {
+            socket.on(evt, () => forwardChaos(evt, socket))
+        })
 
-    socket.on('disconnect', () => {
-        console.log(`[-] Client disconnected: ${socket.id}`)
-        if (io.engine.clientsCount === 0) stopLoops()
-    })
+        socket.on('disconnect', () => {
+            try {
+                console.log(`[-] Client disconnected: ${socket.id}`)
+                if (io.engine.clientsCount === 0) stopLoops()
+            } catch (err) {
+                console.error('[SOCKET] Error in disconnect handler:', err)
+            }
+        })
+
+        socket.on('error', (err) => {
+            console.error(`[SOCKET] Socket error (${socket.id}):`, err)
+        })
+    } catch (err) {
+        console.error('[SOCKET] Error in connection handler:', err)
+    }
 })
 
 // ── REST Endpoints (optional direct access) ─────────────────────────
