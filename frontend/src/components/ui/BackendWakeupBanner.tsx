@@ -34,11 +34,11 @@ export default function BackendWakeupBanner() {
             {showBanner && (
                 <motion.div
                     key={showLive ? 'live' : 'waking'}
-                    initial={{ opacity: 0, y: -60, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 60, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -60, scale: 0.95 }}
+                    exit={{ opacity: 0, y: 60, scale: 0.95 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-                    className="fixed top-5 left-1/2 -translate-x-1/2 z-[200] pointer-events-none"
+                    className="fixed bottom-6 right-6 z-[200] pointer-events-none max-w-sm"
                 >
                     {showLive ? (
                         /* ── Live flash ── */
