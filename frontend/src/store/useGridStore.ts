@@ -36,6 +36,7 @@ export interface GridState {
 
     // Connection status
     connected: boolean
+    waking: boolean      // Render cold-start — backend waking up
     lastTickAt: number   // epoch ms
 
     // Event stream (capped at 50)
@@ -45,9 +46,10 @@ export interface GridState {
     ohlcCandles: OhlcCandle[]
 
     // Zustand actions
-    applyTick: (tick: Omit<GridState, 'connected' | 'lastTickAt' | 'events' | 'ohlcCandles' | 'applyTick' | 'pushEvent' | 'setConnected' | 'pushOhlcCandle'>) => void
+    applyTick: (tick: Omit<GridState, 'connected' | 'waking' | 'lastTickAt' | 'events' | 'ohlcCandles' | 'applyTick' | 'pushEvent' | 'setConnected' | 'setWaking' | 'pushOhlcCandle'>) => void
     pushEvent: (event: GridEvent) => void
     setConnected: (v: boolean) => void
+    setWaking: (v: boolean) => void
     pushOhlcCandle: (candle: OhlcCandle) => void
 }
 
@@ -64,6 +66,7 @@ export const useGridStore = create<GridState>((set) => ({
     batterySoc: 62.4,   // realistic default until first live tick
     nodes: [],
     connected: false,
+    waking: false,
     lastTickAt: 0,
     events: [],
     ohlcCandles: [],
@@ -96,4 +99,5 @@ export const useGridStore = create<GridState>((set) => ({
         })),
 
     setConnected: (v) => set({ connected: v }),
+    setWaking: (v) => set({ waking: v }),
 }))

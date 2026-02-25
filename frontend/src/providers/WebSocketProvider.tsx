@@ -87,7 +87,7 @@ function generateMockEvent(): GridEvent {
 interface WebSocketProviderProps { children: ReactNode }
 
 export default function WebSocketProvider({ children }: WebSocketProviderProps) {
-    const { applyTick, pushEvent, setConnected, pushOhlcCandle } = useGridStore()
+    const { applyTick, pushEvent, setConnected, setWaking, pushOhlcCandle } = useGridStore()
     const socketRef = useRef<Socket | null>(null)
     const mockTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const evtTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -100,6 +100,7 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
     function startMockSimulation() {
         if (mockTimerRef.current) return
         log.warn('Starting MOCK simulation (gateway offline)')
+        setWaking(true)   // ← show the "waking up" banner
         mockTimerRef.current = setInterval(() => {
             const tick = generateMockTick()
             applyTick(tick)
@@ -114,6 +115,7 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
         log.info('Stopping MOCK simulation (gateway connected)')
         clearInterval(mockTimerRef.current); mockTimerRef.current = null
         clearInterval(evtTimerRef.current!); evtTimerRef.current = null
+        setWaking(false)  // ← clears the banner, triggers "Now Live!" flash
     }
 
     const socketEmit = (event: string, data?: unknown) => {
@@ -135,10 +137,11 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
         log.info(`Connecting to gateway at ${SOCKET_URL} …`)
 
         const socket = io(SOCKET_URL, {
-            transports: ['websocket'],
-            reconnectionAttempts: 5,
-            reconnectionDelay: 2000,
-            timeout: 3000,
+            transports: ['websocket', 'polling'],
+            reconnectionAttempts: Infinity,   // never give up — Render just needs time
+            reconnectionDelay: 3000,
+            reconnectionDelayMax: 10000,
+            timeout: 10000,                   // give Render 10s to accept handshake
         })
         socketRef.current = socket
 
@@ -249,13 +252,13 @@ export default function WebSocketProvider({ children }: WebSocketProviderProps) 
         })
 
         // ⚠ DO NOT call startMockSimulation() here — wait for connect_error / disconnect
-        // We give the socket 3s to connect before falling back to mock
+        // Give the socket 10s to connect before falling back to mock (Render needs ~20s to wake)
         const fallbackTimer = setTimeout(() => {
             if (!connectedRef.current) {
-                log.warn('3s timeout — gateway unreachable, starting mock')
+                log.warn('10s timeout — gateway unreachable, starting mock + waking banner')
                 startMockSimulation()
             }
-        }, 3000)
+        }, 10000)
 
         return () => {
             clearTimeout(fallbackTimer)

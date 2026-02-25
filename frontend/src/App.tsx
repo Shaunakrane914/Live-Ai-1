@@ -10,6 +10,7 @@ import ZkTerminalPage from './pages/ZkTerminalPage'
 import AboutPage from './pages/AboutPage'
 import MobileGuard from './components/ui/MobileGuard'
 import BootSplash from './components/ui/BootSplash'
+import BackendWakeupBanner from './components/ui/BackendWakeupBanner'
 import './index.css'
 
 // Full-screen intro component
@@ -69,6 +70,7 @@ function App() {
       <BrowserRouter>
         <WebSocketProvider>
           <BootSplash />
+          <BackendWakeupBanner />
           <AnimatePresence mode="wait">
             {showIntro && (
               <IntroScreen key="intro" onComplete={() => setShowIntro(false)} />
